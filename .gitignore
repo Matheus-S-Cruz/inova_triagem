@@ -1,0 +1,17 @@
+# Dependências (muito pesadas, cada um instala a sua)
+node_modules/
+
+# Pasta de build final
+dist/
+dist-ssr/
+
+# Arquivos de ambiente com chaves/senhas secretas
+.env
+.env.local
+*.local
+
+# Logs de erro e arquivos do sistema
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.DS_Store
