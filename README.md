@@ -1,12 +1,12 @@
 Protótipo criado pelo figma
 
-Rodar:
-Puxar
-baixar - npm i
-rodar - npm run dev
+Rodar: <br>
+Puxar <br>
+baixar - npm i <br>
+rodar - npm run dev 
 
-Triagem +
-Nicolas André
-Nicolas Pimentel
-Matheus Cruz
+Triagem + <br>
+Nicolas André <br>
+Nicolas Pimentel <br>
+Matheus Cruz <br>
 Pedro Pires
