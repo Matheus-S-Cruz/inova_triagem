@@ -46,7 +46,7 @@ git clone <url-do-repositorio>
 ### 2. Acesse a pasta
 
 ```bash
-cd triagem-plus
+cd inova_triagem
 ```
 
 ### 3. Instale as dependências
@@ -64,7 +64,7 @@ npm run dev
 O projeto estará disponível em:
 
 ```
-http://localhost:5173
+http://localhost:8443
 ```
 
 ---
