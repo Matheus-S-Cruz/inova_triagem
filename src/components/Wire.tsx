@@ -5,13 +5,13 @@ import { type ReactNode, type CSSProperties } from 'react'
 export function PhoneFrame({ children }: { children: ReactNode }) {
   return (
     <div style={{
-      width: 375, backgroundColor: '#1a1a1a', borderRadius: 44,
-      padding: '10px 4px', boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 0 0 1px #444',
+      width: 375, backgroundColor: '#0F2A4A', borderRadius: 44,
+      padding: '10px 4px', boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 0 0 1px #3A5468',
       position: 'relative', flexShrink: 0,
     }}>
       {/* Dynamic island */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-        <div style={{ width: 120, height: 30, backgroundColor: '#111', borderRadius: 20 }} />
+        <div style={{ width: 120, height: 30, backgroundColor: '#0F2A4A', borderRadius: 20 }} />
       </div>
       {/* Screen area */}
       <div style={{
@@ -25,7 +25,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
       </div>
       {/* Home indicator */}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-        <div style={{ width: 100, height: 4, backgroundColor: '#444', borderRadius: 2 }} />
+        <div style={{ width: 100, height: 4, backgroundColor: '#3A5468', borderRadius: 2 }} />
       </div>
     </div>
   )
@@ -35,8 +35,8 @@ export function StatusBar() {
   return (
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '8px 20px 4px', backgroundColor: '#f5f5f5',
-      fontSize: 11, fontWeight: 600, color: '#333', fontFamily: 'system-ui',
+      padding: '8px 20px 4px', backgroundColor: '#EFF5F9',
+      fontSize: 11, fontWeight: 600, color: '#155E8A', fontFamily: 'Inter, system-ui, sans-serif',
     }}>
       <span>9:41</span>
       <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -56,19 +56,19 @@ export function NavBar({
   return (
     <div style={{
       display: 'flex', alignItems: 'center', padding: '10px 16px',
-      backgroundColor: '#f5f5f5', borderBottom: '1px solid #ddd', minHeight: 44,
+      backgroundColor: '#EFF5F9', borderBottom: '1px solid #D7E3EC', minHeight: 44,
     }}>
       {onBack ? (
         <button onClick={onBack} style={{
           background: 'none', border: 'none', cursor: 'pointer', padding: '0 8px 0 0',
-          fontSize: 15, color: '#555', fontFamily: 'monospace', flexShrink: 0,
+          fontSize: 15, color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0,
         }}>
           ←
         </button>
       ) : (
         <div style={{ width: 24 }} />
       )}
-      <div style={{ flex: 1, textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#222' }}>
+      <div style={{ flex: 1, textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#16324F' }}>
         {title}
       </div>
       <div style={{ minWidth: 24 }}>{right}</div>
@@ -80,19 +80,19 @@ export function NavBar({
 
 export function ProgressBar({ current, total }: { current: number; total: number }) {
   return (
-    <div style={{ padding: '8px 16px 4px', backgroundColor: '#f5f5f5' }}>
+    <div style={{ padding: '8px 16px 4px', backgroundColor: '#EFF5F9' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
           Pergunta {current} de {total}
         </span>
-        <span style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
           {Math.round((current / total) * 100)}%
         </span>
       </div>
-      <div style={{ height: 4, backgroundColor: '#ddd', borderRadius: 2 }}>
+      <div style={{ height: 4, backgroundColor: '#D7E3EC', borderRadius: 2 }}>
         <div style={{
           height: 4, width: `${(current / total) * 100}%`,
-          backgroundColor: '#555', borderRadius: 2, transition: 'width 0.3s',
+          backgroundColor: '#4E6A80', borderRadius: 2, transition: 'width 0.3s',
         }} />
       </div>
     </div>
@@ -113,10 +113,14 @@ export function Btn({
   small?: boolean
 }) {
   const styles: Record<BtnVariant, CSSProperties> = {
-    primary: { backgroundColor: '#333', color: '#fff', border: '1.5px solid #333' },
-    secondary: { backgroundColor: '#fff', color: '#333', border: '1.5px solid #999' },
-    ghost: { backgroundColor: 'transparent', color: '#555', border: '1.5px solid #ccc' },
-    danger: { backgroundColor: '#991b1b', color: '#fff', border: '1.5px solid #991b1b' },
+    primary: {
+      background: 'linear-gradient(135deg, #155E8A 0%, #0F9B8E 100%)',
+      color: '#fff', border: '1.5px solid transparent',
+      boxShadow: '0 2px 8px rgba(21,94,138,0.28)',
+    },
+    secondary: { backgroundColor: '#fff', color: '#155E8A', border: '1.5px solid #B8D2E0' },
+    ghost: { backgroundColor: 'transparent', color: '#4E6A80', border: '1.5px solid #C6D5E0' },
+    danger: { backgroundColor: '#DC2626', color: '#fff', border: '1.5px solid #DC2626' },
   }
   return (
     <button
@@ -124,15 +128,16 @@ export function Btn({
       style={{
         ...styles[variant],
         width: full ? '100%' : undefined,
-        padding: small ? '7px 12px' : '12px 16px',
+        padding: small ? '8px 14px' : '13px 18px',
         fontSize: small ? 12 : 14,
-        fontWeight: 600,
-        borderRadius: 6,
+        fontWeight: 700,
+        borderRadius: 10,
         cursor: 'pointer',
-        fontFamily: 'system-ui',
+        fontFamily: 'Inter, system-ui, sans-serif',
         textAlign: 'center',
         display: 'block',
         letterSpacing: '-0.01em',
+        transition: 'transform 0.08s ease, box-shadow 0.15s ease',
       }}
     >
       {label}
@@ -146,17 +151,17 @@ export function Field({ label, placeholder = '____________', hint }: {
   label: string; placeholder?: string; hint?: string
 }) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4, fontFamily: 'monospace' }}>
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#16324F', marginBottom: 5, fontFamily: 'Inter, system-ui, sans-serif' }}>
         {label}
       </div>
       <div style={{
-        padding: '9px 10px', border: '1.5px solid #bbb', borderRadius: 4,
-        backgroundColor: '#fafafa', fontSize: 13, color: '#aaa',
+        padding: '10px 12px', border: '1.5px solid #DCE7EF', borderRadius: 10,
+        backgroundColor: '#fff', fontSize: 13, color: '#9AAEBE',
       }}>
         {placeholder}
       </div>
-      {hint && <div style={{ fontSize: 10, color: '#aaa', marginTop: 3, fontFamily: 'monospace' }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 10.5, color: '#7C93A6', marginTop: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>{hint}</div>}
     </div>
   )
 }
@@ -169,21 +174,22 @@ export function OptionItem({
       onClick={onClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-        padding: '10px 12px', marginBottom: 6, border: '1.5px solid',
-        borderColor: selected ? '#444' : '#ccc', borderRadius: 6,
-        backgroundColor: selected ? '#f0f0f0' : '#fff',
+        padding: '11px 14px', marginBottom: 7, border: '1.5px solid',
+        borderColor: selected ? '#155E8A' : '#DCE7EF', borderRadius: 10,
+        backgroundColor: selected ? '#EFF7F6' : '#fff',
+        boxShadow: selected ? '0 1px 4px rgba(21,94,138,0.12)' : 'none',
         cursor: 'pointer', textAlign: 'left',
       }}
     >
       <div style={{
-        width: 16, height: 16, borderRadius: '50%', border: '2px solid',
-        borderColor: selected ? '#333' : '#ccc', flexShrink: 0,
-        backgroundColor: color && selected ? color : selected ? '#333' : 'transparent',
+        width: 17, height: 17, borderRadius: '50%', border: '2px solid',
+        borderColor: selected ? '#155E8A' : '#C6D5E0', flexShrink: 0,
+        backgroundColor: color && selected ? color : selected ? '#155E8A' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {selected && !color && <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#fff' }} />}
       </div>
-      <span style={{ fontSize: 13, color: '#222' }}>{label}</span>
+      <span style={{ fontSize: 13.5, color: '#16324F', fontWeight: selected ? 600 : 400 }}>{label}</span>
     </button>
   )
 }
@@ -192,14 +198,15 @@ export function CheckboxItem({ label, checked, note }: { label: string; checked?
   return (
     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
       <div style={{
-        width: 16, height: 16, border: '2px solid #999', borderRadius: 3, flexShrink: 0, marginTop: 1,
-        backgroundColor: checked ? '#444' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 18, height: 18, border: '2px solid #B8D2E0', borderRadius: 5, flexShrink: 0, marginTop: 1,
+        backgroundColor: checked ? '#155E8A' : '#fff', borderColor: checked ? '#155E8A' : '#B8D2E0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {checked && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
       </div>
       <div>
-        <div style={{ fontSize: 13, color: '#222', lineHeight: 1.4 }}>{label}</div>
-        {note && <div style={{ fontSize: 10, color: '#888', fontFamily: 'monospace', marginTop: 2 }}>{note}</div>}
+        <div style={{ fontSize: 13, color: '#16324F', lineHeight: 1.4 }}>{label}</div>
+        {note && <div style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', marginTop: 2 }}>{note}</div>}
       </div>
     </div>
   )
@@ -221,9 +228,10 @@ export function RiskBadge({ level }: { level: RiskLevel }) {
   const c = RISK_CONFIG[level]
   return (
     <div style={{
-      backgroundColor: c.bg, borderRadius: 12, padding: '20px 16px', textAlign: 'center', margin: '12px 0',
+      backgroundColor: c.bg, borderRadius: 16, padding: '22px 16px', textAlign: 'center', margin: '12px 0',
+      boxShadow: `0 8px 20px ${c.bg}55`,
     }}>
-      <div style={{ fontSize: 11, color: c.text, opacity: 0.8, fontFamily: 'monospace', letterSpacing: '0.1em' }}>
+      <div style={{ fontSize: 11, color: c.text, opacity: 0.8, fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.1em' }}>
         CLASSIFICAÇÃO DE RISCO
       </div>
       <div style={{ fontSize: 32, fontWeight: 900, color: c.text, letterSpacing: '-0.02em', margin: '4px 0' }}>
@@ -247,8 +255,8 @@ export function OccupancyTag({ level }: { level: OccupancyLevel }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600,
-      color: c.color, border: `1.5px solid ${c.color}`, borderRadius: 4, padding: '1px 6px',
-      fontFamily: 'monospace',
+      color: c.color, border: `1.5px solid ${c.color}`, borderRadius: 20, padding: '2px 8px',
+      fontFamily: 'Inter, system-ui, sans-serif', backgroundColor: `${c.color}12`,
     }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.color, flexShrink: 0, display: 'inline-block' }} />
       Lotação {c.label}
@@ -259,8 +267,8 @@ export function OccupancyTag({ level }: { level: OccupancyLevel }) {
 export function WaitTime({ minutes }: { minutes: number }) {
   return (
     <span style={{
-      fontSize: 11, fontFamily: 'monospace', color: '#555',
-      border: '1px solid #ddd', borderRadius: 4, padding: '1px 6px',
+      fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80',
+      border: '1px solid #DCE7EF', borderRadius: 20, padding: '2px 8px', backgroundColor: '#F5F9FB',
     }}>
       ⏱ ~{minutes} min
     </span>
@@ -274,17 +282,17 @@ export function MapBox({ onTap }: { onTap?: () => void }) {
     <div
       onClick={onTap}
       style={{
-        height: 240, backgroundColor: '#e8e8e8', border: '1.5px dashed #aaa',
+        height: 240, backgroundColor: '#E3EDF3', border: '1.5px dashed #9AAEBE',
         borderRadius: 8, position: 'relative', overflow: 'hidden', cursor: onTap ? 'pointer' : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
       {/* Grid lines to suggest a map */}
       {[...Array(6)].map((_, i) => (
-        <div key={`h${i}`} style={{ position: 'absolute', left: 0, right: 0, top: `${i * 20}%`, height: 1, backgroundColor: '#ccc' }} />
+        <div key={`h${i}`} style={{ position: 'absolute', left: 0, right: 0, top: `${i * 20}%`, height: 1, backgroundColor: '#C6D5E0' }} />
       ))}
       {[...Array(6)].map((_, i) => (
-        <div key={`v${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: `${i * 20}%`, width: 1, backgroundColor: '#ccc' }} />
+        <div key={`v${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: `${i * 20}%`, width: 1, backgroundColor: '#C6D5E0' }} />
       ))}
       {/* Markers */}
       <MapMarker x={30} y={40} color="#16a34a" label="UBS" />
@@ -294,11 +302,11 @@ export function MapBox({ onTap }: { onTap?: () => void }) {
       {/* User location */}
       <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}>
         <div style={{
-          width: 16, height: 16, backgroundColor: '#333', borderRadius: '50%',
+          width: 16, height: 16, backgroundColor: '#155E8A', borderRadius: '50%',
           border: '3px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
         }} />
       </div>
-      <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 9, color: '#888', fontFamily: 'monospace' }}>
+      <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
         [MAPA — PLACEHOLDER]
       </div>
     </div>
@@ -310,7 +318,7 @@ function MapMarker({ x, y, color, label }: { x: number; y: number; color: string
     <div style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, transform: 'translate(-50%,-100%)' }}>
       <div style={{
         backgroundColor: color, color: '#fff', fontSize: 9, fontWeight: 700,
-        fontFamily: 'monospace', padding: '1px 4px', borderRadius: 3, whiteSpace: 'nowrap',
+        fontFamily: 'Inter, system-ui, sans-serif', padding: '1px 4px', borderRadius: 3, whiteSpace: 'nowrap',
         boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
       }}>
         {label}
@@ -324,7 +332,7 @@ function MapMarker({ x, y, color, label }: { x: number; y: number; color: string
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: '#666', fontFamily: 'monospace', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, marginTop: 4 }}>
+    <div style={{ fontSize: 11, fontWeight: 700, color: '#5C7690', fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, marginTop: 4 }}>
       {children}
     </div>
   )
@@ -332,14 +340,14 @@ export function SectionTitle({ children }: { children: ReactNode }) {
 
 export function BodyText({ children, size = 13 }: { children: ReactNode; size?: number }) {
   return (
-    <p style={{ fontSize: size, color: '#444', lineHeight: 1.5, margin: '0 0 8px' }}>
+    <p style={{ fontSize: size, color: '#3A5468', lineHeight: 1.5, margin: '0 0 8px' }}>
       {children}
     </p>
   )
 }
 
 export function Divider() {
-  return <div style={{ height: 1, backgroundColor: '#e8e8e8', margin: '10px 0' }} />
+  return <div style={{ height: 1, backgroundColor: '#E3EDF3', margin: '10px 0' }} />
 }
 
 // ─── Disclaimer ───────────────────────────────────────────────────────────────
@@ -347,13 +355,13 @@ export function Divider() {
 export function Disclaimer() {
   return (
     <div style={{
-      border: '2px solid #333', borderRadius: 6, padding: '10px 12px',
-      backgroundColor: '#f5f5f5', margin: '12px 0',
+      border: '1.5px solid #B8D2E0', borderRadius: 10, padding: '12px 14px',
+      backgroundColor: '#EFF5F9', margin: '12px 0',
     }}>
-      <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', color: '#222', letterSpacing: '0.04em', marginBottom: 4 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif', color: '#16324F', letterSpacing: '0.04em', marginBottom: 4 }}>
         ⚠ AVISO IMPORTANTE
       </div>
-      <div style={{ fontSize: 11, color: '#333', lineHeight: 1.45 }}>
+      <div style={{ fontSize: 11, color: '#155E8A', lineHeight: 1.45 }}>
         Esta ferramenta <strong>não realiza diagnóstico médico</strong>. As recomendações são orientativas e <strong>não substituem avaliação de profissional de saúde</strong>.
       </div>
     </div>
@@ -365,14 +373,14 @@ export function Disclaimer() {
 export function A11yNote({ notes }: { notes: string[] }) {
   return (
     <div style={{
-      borderLeft: '3px solid #888', backgroundColor: '#f0f0f0', padding: '8px 10px',
+      borderLeft: '3px solid #7C93A6', backgroundColor: '#EAF2F6', padding: '8px 10px',
       margin: '12px 0', borderRadius: '0 4px 4px 0',
     }}>
-      <div style={{ fontSize: 9, fontFamily: 'monospace', color: '#666', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 4 }}>
+      <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#5C7690', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 4 }}>
         ♿ ANOTAÇÕES DE ACESSIBILIDADE
       </div>
       {notes.map((n, i) => (
-        <div key={i} style={{ fontSize: 10, color: '#555', lineHeight: 1.4, marginBottom: 2, display: 'flex', gap: 4 }}>
+        <div key={i} style={{ fontSize: 10, color: '#4E6A80', lineHeight: 1.4, marginBottom: 2, display: 'flex', gap: 4 }}>
           <span>→</span><span>{n}</span>
         </div>
       ))}
@@ -387,12 +395,12 @@ export function ListRow({ children, onClick }: { children: ReactNode; onClick?: 
     <div
       onClick={onClick}
       style={{
-        padding: '12px 0', borderBottom: '1px solid #eee', display: 'flex',
+        padding: '12px 0', borderBottom: '1px solid #E7EFF4', display: 'flex',
         alignItems: 'flex-start', gap: 10, cursor: onClick ? 'pointer' : undefined,
       }}
     >
       {children}
-      {onClick && <span style={{ fontSize: 12, color: '#bbb', flexShrink: 0, marginLeft: 'auto', alignSelf: 'center' }}>›</span>}
+      {onClick && <span style={{ fontSize: 12, color: '#A9BBC9', flexShrink: 0, marginLeft: 'auto', alignSelf: 'center' }}>›</span>}
     </div>
   )
 }
@@ -402,7 +410,7 @@ export function ListRow({ children, onClick }: { children: ReactNode; onClick?: 
 export function TabBar({ items, active }: { items: { label: string; icon: string; id: string }[]; active: string }) {
   return (
     <div style={{
-      display: 'flex', borderTop: '1px solid #ddd', backgroundColor: '#fafafa',
+      display: 'flex', borderTop: '1px solid #D7E3EC', backgroundColor: '#F5F9FB',
       position: 'sticky', bottom: 0,
     }}>
       {items.map(item => (
@@ -413,8 +421,8 @@ export function TabBar({ items, active }: { items: { label: string; icon: string
             padding: '8px 0', gap: 2,
           }}
         >
-          <span style={{ fontSize: 18, color: active === item.id ? '#333' : '#bbb' }}>{item.icon}</span>
-          <span style={{ fontSize: 9, fontFamily: 'monospace', color: active === item.id ? '#333' : '#bbb', fontWeight: active === item.id ? 700 : 400 }}>
+          <span style={{ fontSize: 18, color: active === item.id ? '#155E8A' : '#A9BBC9' }}>{item.icon}</span>
+          <span style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: active === item.id ? '#155E8A' : '#A9BBC9', fontWeight: active === item.id ? 700 : 400 }}>
             {item.label}
           </span>
         </div>

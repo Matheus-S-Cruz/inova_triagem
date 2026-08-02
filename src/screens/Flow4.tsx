@@ -16,7 +16,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
     <ScreenWrap>
       <NavBar title="Criar Conta" onBack={() => navigate('home')} />
       <Content>
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 16, backgroundColor: '#f5f5f5', padding: '8px 10px', borderRadius: 6 }}>
+        <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 16, backgroundColor: '#EFF5F9', padding: '8px 10px', borderRadius: 6 }}>
           ℹ Cadastro opcional. Permite salvar histórico e pré-preencher triagens futuras.
         </div>
 
@@ -27,7 +27,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
         <Field label="E-mail" placeholder="nome@email.com" hint="Opcional" />
 
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 6, fontFamily: 'monospace' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#4E6A80', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' }}>
             SEXO BIOLÓGICO
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -37,10 +37,10 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
                 onClick={() => setSex(s)}
                 style={{
                   flex: 1, padding: '8px 4px', border: '1.5px solid',
-                  borderColor: sex === s ? '#444' : '#ccc',
-                  borderRadius: 6, backgroundColor: sex === s ? '#f0f0f0' : '#fff',
-                  fontSize: 11, cursor: 'pointer', fontFamily: 'system-ui',
-                  color: '#333',
+                  borderColor: sex === s ? '#3A5468' : '#C6D5E0',
+                  borderRadius: 6, backgroundColor: sex === s ? '#EAF2F6' : '#fff',
+                  fontSize: 11, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                  color: '#155E8A',
                 }}
               >
                 {s}
@@ -106,7 +106,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         right={
           <button
             onClick={() => setEditing(!editing)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#555', fontFamily: 'monospace' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif' }}
           >
             {editing ? 'Salvar' : 'Editar'}
           </button>
@@ -116,17 +116,17 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         {/* Avatar placeholder */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           <div style={{
-            width: 60, height: 60, borderRadius: '50%', backgroundColor: '#ddd',
-            border: '2px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24, color: '#999',
+            width: 60, height: 60, borderRadius: '50%', backgroundColor: '#D7E3EC',
+            border: '2px solid #C6D5E0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 24, color: '#8CA1B2',
           }}>
             👤
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>Maria A. Silva</div>
-            <div style={{ fontSize: 12, color: '#888', fontFamily: 'monospace' }}>Conta criada em jan/2025</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A' }}>Maria A. Silva</div>
+            <div style={{ fontSize: 12, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>Conta criada em jan/2025</div>
             {editing && (
-              <button style={{ fontSize: 11, color: '#555', marginTop: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+              <button style={{ fontSize: 11, color: '#4E6A80', marginTop: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
                 Alterar foto
               </button>
             )}
@@ -142,7 +142,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
             <Field label="Cidade / Bairro" placeholder="São Paulo — Vila Mariana" />
           </>
         ) : (
-          <div style={{ backgroundColor: '#fafafa', border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+          <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
             {[
               { label: 'Nome', value: 'Maria Aparecida Silva' },
               { label: 'Nascimento', value: '12/03/1985 · 40 anos' },
@@ -155,11 +155,11 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
                 key={label}
                 style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 12px', borderBottom: i < 5 ? '1px solid #f0f0f0' : 'none',
+                  padding: '10px 12px', borderBottom: i < 5 ? '1px solid #EAF2F6' : 'none',
                 }}
               >
-                <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>{label}</span>
-                <span style={{ fontSize: 13, color: '#222' }}>{value}</span>
+                <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
+                <span style={{ fontSize: 13, color: '#16324F' }}>{value}</span>
               </div>
             ))}
           </div>
@@ -167,7 +167,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
         <Divider />
         <SectionTitle>Saúde</SectionTitle>
-        <div style={{ backgroundColor: '#fafafa', border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+        <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
           {[
             { label: 'Plano de saúde', value: 'Unimed Paulistana' },
             { label: 'Alergias', value: 'Dipirona' },
@@ -178,11 +178,11 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
               key={label}
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                padding: '10px 12px', borderBottom: i < 3 ? '1px solid #f0f0f0' : 'none', gap: 12,
+                padding: '10px 12px', borderBottom: i < 3 ? '1px solid #EAF2F6' : 'none', gap: 12,
               }}
             >
-              <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace', flexShrink: 0 }}>{label}</span>
-              <span style={{ fontSize: 12, color: '#222', textAlign: 'right' }}>{value}</span>
+              <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
+              <span style={{ fontSize: 12, color: '#16324F', textAlign: 'right' }}>{value}</span>
             </div>
           ))}
         </div>
@@ -231,7 +231,7 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
         ) : (
           // List view
           <>
-            <div style={{ fontSize: 12, color: '#888', marginBottom: 14, fontFamily: 'monospace' }}>
+            <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>
               {HISTORY_ITEMS.length} triagens realizadas
             </div>
 
@@ -239,31 +239,31 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
               <ListRow key={item.id} onClick={() => setSelected(item.id)}>
                 {/* Date badge */}
                 <div style={{
-                  width: 44, height: 44, borderRadius: 8, backgroundColor: '#f0f0f0',
-                  border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column',
+                  width: 44, height: 44, borderRadius: 8, backgroundColor: '#EAF2F6',
+                  border: '1px solid #DCE7EF', display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#333', lineHeight: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#155E8A', lineHeight: 1 }}>
                     {item.date.slice(0, 2)}
                   </div>
-                  <div style={{ fontSize: 9, color: '#888', fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
                     {['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(item.date.slice(3, 5)) - 1]}
                   </div>
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', marginBottom: 3 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#0F2A4A', marginBottom: 3 }}>
                     {item.symptom}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{
-                      fontSize: 10, fontWeight: 700, fontFamily: 'monospace',
-                      color: '#fff', backgroundColor: RISK_COLORS[item.classification] || '#555',
+                      fontSize: 10, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif',
+                      color: '#fff', backgroundColor: RISK_COLORS[item.classification] || '#4E6A80',
                       borderRadius: 4, padding: '1px 6px',
                     }}>
                       {item.classification}
                     </span>
-                    <span style={{ fontSize: 10, color: '#aaa', fontFamily: 'monospace' }}>
+                    <span style={{ fontSize: 10, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {item.date}
                     </span>
                   </div>
@@ -295,20 +295,20 @@ function HistoryDetail({ item, onBack, navigate }: {
     <>
       <button onClick={onBack} style={{
         background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
-        color: '#555', fontFamily: 'monospace', marginBottom: 14, padding: 0,
+        color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif', marginBottom: 14, padding: 0,
         display: 'flex', alignItems: 'center', gap: 4,
       }}>
         ← Voltar ao histórico
       </button>
 
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
         Triagem de {item.date}
       </div>
 
       <div style={{ marginBottom: 12 }}>
         <span style={{
-          fontSize: 11, fontWeight: 700, fontFamily: 'monospace', color: '#fff',
-          backgroundColor: RISK_COLORS[item.classification] || '#555',
+          fontSize: 11, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif', color: '#fff',
+          backgroundColor: RISK_COLORS[item.classification] || '#4E6A80',
           borderRadius: 4, padding: '2px 8px',
         }}>
           {item.classification}
@@ -317,7 +317,7 @@ function HistoryDetail({ item, onBack, navigate }: {
 
       <Divider />
       <SectionTitle>Respostas Registradas</SectionTitle>
-      <div style={{ backgroundColor: '#fafafa', border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+      <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
         {[
           { label: 'Sintoma', value: item.symptom },
           { label: 'Duração', value: 'Hoje (6–24h)' },
@@ -329,10 +329,10 @@ function HistoryDetail({ item, onBack, navigate }: {
         ].map(({ label, value }, i, arr) => (
           <div key={label} style={{
             display: 'flex', justifyContent: 'space-between', padding: '8px 12px',
-            borderBottom: i < arr.length - 1 ? '1px solid #f0f0f0' : 'none',
+            borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none',
           }}>
-            <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>{label}</span>
-            <span style={{ fontSize: 12, color: '#222' }}>{value}</span>
+            <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
+            <span style={{ fontSize: 12, color: '#16324F' }}>{value}</span>
           </div>
         ))}
       </div>

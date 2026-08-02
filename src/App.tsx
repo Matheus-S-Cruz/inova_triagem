@@ -99,20 +99,20 @@ export default function App() {
   const currentLabel = FLOWS.flatMap(f => f.screens).find(s => s.id === screen)?.label ?? ''
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#d4d4d4', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#DDE9EF', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       {/* Sidebar navigator */}
       <aside style={{
-        width: 230, backgroundColor: '#1a1a1a', color: '#ccc',
-        overflowY: 'auto', flexShrink: 0, borderRight: '1px solid #333',
+        width: 230, backgroundColor: '#0F2A4A', color: '#C6D5E0',
+        overflowY: 'auto', flexShrink: 0, borderRight: '1px solid #155E8A',
       }}>
-        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #333' }}>
-          <div style={{ fontSize: 9, fontFamily: 'monospace', color: '#555', letterSpacing: '0.08em', marginBottom: 3 }}>
+        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #155E8A' }}>
+          <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80', letterSpacing: '0.08em', marginBottom: 3 }}>
             PROTÓTIPO LO-FI
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
             Triagem+
           </div>
-          <div style={{ fontSize: 9, color: '#555', marginTop: 1 }}>
+          <div style={{ fontSize: 9, color: '#4E6A80', marginTop: 1 }}>
             Wireframe · 14 telas · 5 fluxos
           </div>
         </div>
@@ -120,8 +120,8 @@ export default function App() {
         {FLOWS.map((flow) => (
           <div key={flow.label}>
             <div style={{
-              padding: '10px 12px 3px', fontSize: 9, fontFamily: 'monospace',
-              color: '#555', textTransform: 'uppercase', letterSpacing: '0.06em',
+              padding: '10px 12px 3px', fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif',
+              color: '#4E6A80', textTransform: 'uppercase', letterSpacing: '0.06em',
             }}>
               {flow.label}
             </div>
@@ -132,10 +132,10 @@ export default function App() {
                 style={{
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '5px 12px 5px 16px', fontSize: 11,
-                  color: screen === s.id ? '#fff' : '#888',
-                  backgroundColor: screen === s.id ? '#383838' : 'transparent',
+                  color: screen === s.id ? '#fff' : '#7C93A6',
+                  backgroundColor: screen === s.id ? '#134E75' : 'transparent',
                   border: 'none', cursor: 'pointer',
-                  borderLeft: screen === s.id ? '2px solid #bbb' : '2px solid transparent',
+                  borderLeft: screen === s.id ? '2px solid #A9BBC9' : '2px solid transparent',
                   transition: 'all 0.1s',
                 }}
               >
@@ -145,8 +145,8 @@ export default function App() {
           </div>
         ))}
 
-        <div style={{ padding: '16px 12px', borderTop: '1px solid #333', marginTop: 8 }}>
-          <div style={{ fontSize: 9, color: '#444', fontFamily: 'monospace', lineHeight: 1.5 }}>
+        <div style={{ padding: '16px 12px', borderTop: '1px solid #155E8A', marginTop: 8 }}>
+          <div style={{ fontSize: 9, color: '#3A5468', fontFamily: 'Inter, system-ui, sans-serif', lineHeight: 1.5 }}>
             ♿ Anotações de acessibilidade<br />
             indicadas nas telas relevantes
           </div>
@@ -156,8 +156,8 @@ export default function App() {
       {/* Main canvas */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '32px 24px', overflowY: 'auto' }}>
         {/* Frame label */}
-        <div style={{ marginBottom: 12, fontFamily: 'monospace', fontSize: 11, color: '#666', textAlign: 'center' }}>
-          <span style={{ backgroundColor: '#c0c0c0', padding: '2px 8px', borderRadius: 2 }}>
+        <div style={{ marginBottom: 12, fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#5C7690', textAlign: 'center' }}>
+          <span style={{ backgroundColor: '#B9C8D4', padding: '2px 8px', borderRadius: 2 }}>
             {currentLabel}
           </span>
         </div>
@@ -179,24 +179,24 @@ export default function App() {
                   onClick={() => prev && navigate(prev.id as ScreenId)}
                   disabled={!prev}
                   style={{
-                    padding: '5px 12px', fontSize: 11, fontFamily: 'monospace',
-                    backgroundColor: prev ? '#b0b0b0' : '#ccc', color: prev ? '#222' : '#999',
-                    border: '1px solid #999', cursor: prev ? 'pointer' : 'default',
+                    padding: '5px 12px', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif',
+                    backgroundColor: prev ? '#AFC2D1' : '#C6D5E0', color: prev ? '#16324F' : '#8CA1B2',
+                    border: '1px solid #8CA1B2', cursor: prev ? 'pointer' : 'default',
                     borderRadius: 2,
                   }}
                 >
                   ← Anterior
                 </button>
-                <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#777' }}>
+                <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 10, color: '#66809A' }}>
                   {FLOWS.flatMap(f => f.screens).findIndex(s => s.id === screen) + 1} / {FLOWS.flatMap(f => f.screens).length}
                 </span>
                 <button
                   onClick={() => next && navigate(next.id as ScreenId)}
                   disabled={!next}
                   style={{
-                    padding: '5px 12px', fontSize: 11, fontFamily: 'monospace',
-                    backgroundColor: next ? '#b0b0b0' : '#ccc', color: next ? '#222' : '#999',
-                    border: '1px solid #999', cursor: next ? 'pointer' : 'default',
+                    padding: '5px 12px', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif',
+                    backgroundColor: next ? '#AFC2D1' : '#C6D5E0', color: next ? '#16324F' : '#8CA1B2',
+                    border: '1px solid #8CA1B2', cursor: next ? 'pointer' : 'default',
                     borderRadius: 2,
                   }}
                 >

@@ -4,6 +4,7 @@ import {
   NavBar, Btn, Field, SectionTitle, Divider,
   OccupancyTag, A11yNote, ScreenWrap, Content,
 } from '../components/Wire'
+import { LogoMark } from '../components/Logo'
 
 type OccLevel = 'low' | 'medium' | 'high'
 
@@ -16,23 +17,19 @@ export function TeamLoginScreen({ navigate }: { navigate: Navigate }) {
       <Content>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            width: 52, height: 52, backgroundColor: '#333', borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, margin: '0 auto 12px',
-          }}>
-            🏥
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <LogoMark size={52} />
           </div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#0F2A4A', letterSpacing: '-0.02em' }}>
             Triagem+ Equipe
           </div>
-          <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: '#7C93A6', marginTop: 4 }}>
             Acesso restrito — equipe da unidade de saúde
           </div>
         </div>
 
         <div style={{
-          backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0',
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF',
           borderRadius: 8, padding: '16px', marginBottom: 20,
         }}>
           <SectionTitle>Credenciais da Unidade</SectionTitle>
@@ -41,7 +38,7 @@ export function TeamLoginScreen({ navigate }: { navigate: Navigate }) {
           <Field label="Senha" placeholder="••••••••" />
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#555', textDecoration: 'underline' }}>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4E6A80', textDecoration: 'underline' }}>
               Esqueci minha senha
             </button>
           </div>
@@ -49,7 +46,7 @@ export function TeamLoginScreen({ navigate }: { navigate: Navigate }) {
           <Btn label="Entrar" onClick={() => navigate('occupancy')} variant="primary" />
         </div>
 
-        <div style={{ fontSize: 11, color: '#aaa', textAlign: 'center', lineHeight: 1.5, fontFamily: 'monospace' }}>
+        <div style={{ fontSize: 11, color: '#9AAEBE', textAlign: 'center', lineHeight: 1.5, fontFamily: 'Inter, system-ui, sans-serif' }}>
           Acesso autorizado somente a servidores cadastrados.<br />
           Tentativas suspeitas são registradas e reportadas.
         </div>
@@ -59,7 +56,7 @@ export function TeamLoginScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ textAlign: 'center' }}>
           <button onClick={() => navigate('home')} style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, color: '#888', textDecoration: 'underline',
+            fontSize: 12, color: '#7C93A6', textDecoration: 'underline',
           }}>
             ← Voltar ao app do cidadão
           </button>
@@ -105,7 +102,7 @@ export function OccupancyScreen({ navigate }: { navigate: Navigate }) {
         right={
           <button
             onClick={() => navigate('admin')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#555', fontFamily: 'monospace' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif' }}
           >
             Painel ›
           </button>
@@ -114,18 +111,18 @@ export function OccupancyScreen({ navigate }: { navigate: Navigate }) {
       <Content>
         {/* Unit header */}
         <div style={{
-          backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0',
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF',
           borderRadius: 8, padding: '10px 12px', marginBottom: 16,
         }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a' }}>UPA Santo André</div>
-          <div style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>CNES 0012345 · Última atualização: 5 min atrás</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#0F2A4A' }}>UPA Santo André</div>
+          <div style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>CNES 0012345 · Última atualização: 5 min atrás</div>
         </div>
 
         {/* Status atual */}
         <SectionTitle>Status Atual</SectionTitle>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <OccupancyTag level={occ} />
-          <span style={{ fontSize: 12, color: '#555' }}>{OCC_LABELS[occ]}</span>
+          <span style={{ fontSize: 12, color: '#4E6A80' }}>{OCC_LABELS[occ]}</span>
         </div>
 
         {/* Lotação selector */}
@@ -137,21 +134,21 @@ export function OccupancyScreen({ navigate }: { navigate: Navigate }) {
               onClick={() => setOcc(level)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-                border: '2px solid', borderColor: occ === level ? OCC_SLIDER_COLORS[level] : '#ddd',
+                border: '2px solid', borderColor: occ === level ? OCC_SLIDER_COLORS[level] : '#D7E3EC',
                 borderRadius: 8, backgroundColor: occ === level ? `${OCC_SLIDER_COLORS[level]}15` : '#fff',
                 cursor: 'pointer', textAlign: 'left',
               }}
             >
               <div style={{
                 width: 14, height: 14, borderRadius: '50%',
-                backgroundColor: occ === level ? OCC_SLIDER_COLORS[level] : '#ddd',
+                backgroundColor: occ === level ? OCC_SLIDER_COLORS[level] : '#D7E3EC',
                 flexShrink: 0,
               }} />
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: OCC_SLIDER_COLORS[level] }}>
                   {level === 'low' ? 'Baixa' : level === 'medium' ? 'Média' : 'Alta'}
                 </div>
-                <div style={{ fontSize: 11, color: '#888' }}>{OCC_LABELS[level]}</div>
+                <div style={{ fontSize: 11, color: '#7C93A6' }}>{OCC_LABELS[level]}</div>
               </div>
             </button>
           ))}
@@ -164,17 +161,17 @@ export function OccupancyScreen({ navigate }: { navigate: Navigate }) {
             <input
               type="range" min={0} max={180} step={5} value={queue}
               onChange={(e) => setQueue(Number(e.target.value))}
-              style={{ flex: 1, accentColor: '#333' }}
+              style={{ flex: 1, accentColor: '#155E8A' }}
             />
             <div style={{
               minWidth: 54, textAlign: 'center', padding: '4px 8px',
-              border: '1.5px solid #ccc', borderRadius: 6,
-              fontSize: 14, fontWeight: 700, color: '#222', fontFamily: 'monospace',
+              border: '1.5px solid #C6D5E0', borderRadius: 6,
+              fontSize: 14, fontWeight: 700, color: '#16324F', fontFamily: 'Inter, system-ui, sans-serif',
             }}>
               {queue}min
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#aaa', fontFamily: 'monospace' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif' }}>
             <span>0 min</span><span>30</span><span>60</span><span>90</span><span>120</span><span>180 min</span>
           </div>
         </div>
@@ -183,13 +180,13 @@ export function OccupancyScreen({ navigate }: { navigate: Navigate }) {
         <SectionTitle>Capacidade Ocupada</SectionTitle>
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <div style={{ flex: 1, height: 20, backgroundColor: '#eee', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ flex: 1, height: 20, backgroundColor: '#E7EFF4', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', width: '87%',
                 backgroundColor: OCC_SLIDER_COLORS[occ], transition: 'width 0.3s',
               }} />
             </div>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#222', fontFamily: 'monospace', minWidth: 36 }}>87%</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#16324F', fontFamily: 'Inter, system-ui, sans-serif', minWidth: 36 }}>87%</span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Field label="Atendimentos em espera" placeholder="12 pacientes" />
@@ -262,19 +259,19 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
       <Content>
         {/* Context bar */}
         <div style={{
-          backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0',
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF',
           borderRadius: 6, padding: '8px 12px', marginBottom: 16,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#333' }}>UPA Santo André</div>
-            <div style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>Hoje · 09/07/2025 · Turno 07h–19h</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#155E8A' }}>UPA Santo André</div>
+            <div style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>Hoje · 09/07/2025 · Turno 07h–19h</div>
           </div>
           <button
             onClick={() => navigate('occupancy')}
             style={{
-              padding: '5px 10px', border: '1.5px solid #ccc', borderRadius: 4,
-              backgroundColor: '#fff', cursor: 'pointer', fontSize: 10, fontFamily: 'monospace', color: '#555',
+              padding: '5px 10px', border: '1.5px solid #C6D5E0', borderRadius: 4,
+              backgroundColor: '#fff', cursor: 'pointer', fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80',
             }}
           >
             ← Lotação
@@ -290,12 +287,12 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
             { label: 'Última hora', value: 7, sub: 'solicitações' },
           ].map(({ label, value, sub }) => (
             <div key={label} style={{
-              border: '1.5px solid #e0e0e0', borderRadius: 8, padding: '10px 8px',
-              backgroundColor: '#fafafa', textAlign: 'center',
+              border: '1.5px solid #DCE7EF', borderRadius: 8, padding: '10px 8px',
+              backgroundColor: '#F5F9FB', textAlign: 'center',
             }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: '#1a1a1a', letterSpacing: '-0.02em' }}>{value}</div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#555' }}>{label}</div>
-              <div style={{ fontSize: 9, color: '#aaa', fontFamily: 'monospace' }}>{sub}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#0F2A4A', letterSpacing: '-0.02em' }}>{value}</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#4E6A80' }}>{label}</div>
+              <div style={{ fontSize: 9, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif' }}>{sub}</div>
             </div>
           ))}
         </div>
@@ -310,13 +307,13 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: color }} />
-                  <span style={{ fontSize: 11, color: '#333' }}>{level}</span>
+                  <span style={{ fontSize: 11, color: '#155E8A' }}>{level}</span>
                 </div>
-                <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#555' }}>
+                <span style={{ fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80' }}>
                   {count} ({pct}%)
                 </span>
               </div>
-              <div style={{ height: 8, backgroundColor: '#eee', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: 8, backgroundColor: '#E7EFF4', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${pct}%`, backgroundColor: color, transition: 'width 0.4s' }} />
               </div>
             </div>
@@ -330,15 +327,15 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ marginBottom: 16 }}>
           {TOP_SYMPTOMS.map(({ symptom, count }) => (
             <div key={symptom} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: '#333', minWidth: 110 }}>{symptom}</span>
-              <div style={{ flex: 1, height: 10, backgroundColor: '#eee', borderRadius: 4, overflow: 'hidden' }}>
+              <span style={{ fontSize: 12, color: '#155E8A', minWidth: 110 }}>{symptom}</span>
+              <div style={{ flex: 1, height: 10, backgroundColor: '#E7EFF4', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%',
                   width: `${(count / TOP_SYMPTOMS[0].count) * 100}%`,
-                  backgroundColor: '#888',
+                  backgroundColor: '#7C93A6',
                 }} />
               </div>
-              <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#666', minWidth: 18, textAlign: 'right' }}>
+              <span style={{ fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', color: '#5C7690', minWidth: 18, textAlign: 'right' }}>
                 {count}
               </span>
             </div>
@@ -352,9 +349,9 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ marginBottom: 16 }}>
           {/* Mini map placeholder */}
           <div style={{
-            height: 100, backgroundColor: '#eee', border: '1.5px dashed #bbb',
+            height: 100, backgroundColor: '#E7EFF4', border: '1.5px dashed #A9BBC9',
             borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 10, fontSize: 10, color: '#aaa', fontFamily: 'monospace',
+            marginBottom: 10, fontSize: 10, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif',
           }}>
             [MAPA COROPLÉTICO — PLACEHOLDER]<br />
             Intensidade por bairro/região
@@ -364,20 +361,20 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
             <div key={region} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '6px 10px', marginBottom: 4,
-              border: '1px solid #e8e8e8', borderRadius: 6, backgroundColor: '#fafafa',
+              border: '1px solid #E3EDF3', borderRadius: 6, backgroundColor: '#F5F9FB',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: REGION_OCC_COLORS[demand] }} />
-                <span style={{ fontSize: 12, color: '#333' }}>{region}</span>
+                <span style={{ fontSize: 12, color: '#155E8A' }}>{region}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#888' }}>
+                <span style={{ fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6' }}>
                   {count} triagens
                 </span>
                 <span style={{
                   fontSize: 9, fontWeight: 700, color: REGION_OCC_COLORS[demand],
                   border: `1px solid ${REGION_OCC_COLORS[demand]}`, borderRadius: 3, padding: '0 4px',
-                  fontFamily: 'monospace',
+                  fontFamily: 'Inter, system-ui, sans-serif',
                 }}>
                   {demand === 'low' ? 'BAIXA' : demand === 'medium' ? 'MÉDIA' : 'ALTA'}
                 </span>
@@ -398,13 +395,13 @@ export function AdminScreen({ navigate }: { navigate: Navigate }) {
           ].map(({ time, type, msg }, i) => (
             <div key={i} style={{
               display: 'flex', gap: 8, padding: '7px 0',
-              borderBottom: i < 2 ? '1px solid #f0f0f0' : 'none',
+              borderBottom: i < 2 ? '1px solid #EAF2F6' : 'none',
             }}>
-              <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#aaa', flexShrink: 0, marginTop: 1 }}>{time}</span>
+              <span style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#9AAEBE', flexShrink: 0, marginTop: 1 }}>{time}</span>
               {type === 'high' && (
                 <span style={{ color: '#dc2626', fontSize: 12, flexShrink: 0 }}>⚠</span>
               )}
-              <span style={{ fontSize: 11, color: '#444', lineHeight: 1.4 }}>{msg}</span>
+              <span style={{ fontSize: 11, color: '#3A5468', lineHeight: 1.4 }}>{msg}</span>
             </div>
           ))}
         </div>

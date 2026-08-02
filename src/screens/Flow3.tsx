@@ -31,7 +31,7 @@ const UNITS: Unit[] = [
 ]
 
 const TYPE_COLORS: Record<UnitType, string> = {
-  UBS: '#555', UPA: '#ea580c', Hospital: '#7c3aed', Particular: '#0369a1',
+  UBS: '#4E6A80', UPA: '#ea580c', Hospital: '#7c3aed', Particular: '#0369a1',
 }
 
 // ─── 6. Mapa ──────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
       <NavBar title="Unidades de Saúde" onBack={() => navigate('result')} />
 
       {/* Tab toggle */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #ddd', backgroundColor: '#f5f5f5' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid #D7E3EC', backgroundColor: '#EFF5F9' }}>
         {(['map', 'list'] as const).map(tab => (
           <button
             key={tab}
@@ -52,8 +52,8 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
             style={{
               flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
               backgroundColor: activeTab === tab ? '#fff' : 'transparent',
-              borderBottom: activeTab === tab ? '2px solid #333' : '2px solid transparent',
-              fontSize: 12, fontWeight: activeTab === tab ? 700 : 400, color: activeTab === tab ? '#222' : '#888',
+              borderBottom: activeTab === tab ? '2px solid #155E8A' : '2px solid transparent',
+              fontSize: 12, fontWeight: activeTab === tab ? 700 : 400, color: activeTab === tab ? '#16324F' : '#7C93A6',
             }}
           >
             {tab === 'map' ? '🗺  Mapa' : '☰  Lista'}
@@ -62,15 +62,15 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
       </div>
 
       {/* Filter bar */}
-      <div style={{ padding: '8px 16px', borderBottom: '1px solid #eee', display: 'flex', gap: 6, overflowX: 'auto' }}>
+      <div style={{ padding: '8px 16px', borderBottom: '1px solid #E7EFF4', display: 'flex', gap: 6, overflowX: 'auto' }}>
         {['Todos', 'UBS', 'UPA', 'Hospital', 'Particular'].map(f => (
           <button
             key={f}
             style={{
-              padding: '4px 10px', border: '1.5px solid #ccc', borderRadius: 12,
-              backgroundColor: f === 'Todos' ? '#333' : '#fff',
-              color: f === 'Todos' ? '#fff' : '#555',
-              fontSize: 10, fontFamily: 'monospace', cursor: 'pointer', flexShrink: 0,
+              padding: '4px 10px', border: '1.5px solid #C6D5E0', borderRadius: 12,
+              backgroundColor: f === 'Todos' ? '#155E8A' : '#fff',
+              color: f === 'Todos' ? '#fff' : '#4E6A80',
+              fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer', flexShrink: 0,
             }}
           >
             {f}
@@ -85,7 +85,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
         {/* Legend */}
         <div style={{ padding: '0 16px 8px' }}>
-          <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#888', marginBottom: 6 }}>LEGENDA — LOTAÇÃO DOS MARCADORES:</div>
+          <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6', marginBottom: 6 }}>LEGENDA — LOTAÇÃO DOS MARCADORES:</div>
           <div style={{ display: 'flex', gap: 12 }}>
             {[
               { color: '#16a34a', label: 'Baixa' },
@@ -94,7 +94,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
             ].map(({ color, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color }} />
-                <span style={{ fontSize: 10, color: '#555', fontFamily: 'monospace' }}>{label}</span>
+                <span style={{ fontSize: 10, color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -109,22 +109,22 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
                 key={unit.id}
                 onClick={() => navigate('unitdetail')}
                 style={{
-                  border: '1.5px solid #e0e0e0', borderRadius: 8, padding: '10px 12px',
+                  border: '1.5px solid #DCE7EF', borderRadius: 8, padding: '10px 12px',
                   backgroundColor: '#fff', cursor: 'pointer',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a' }}>{unit.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0F2A4A' }}>{unit.name}</div>
                     <span style={{
-                      fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
+                      fontSize: 9, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif',
                       color: TYPE_COLORS[unit.type], border: `1px solid ${TYPE_COLORS[unit.type]}`,
                       borderRadius: 3, padding: '0 4px',
                     }}>
                       {unit.type}
                     </span>
                   </div>
-                  <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>{unit.distance}</span>
+                  <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{unit.distance}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <OccupancyTag level={unit.occupancy} />
@@ -157,7 +157,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
       <NavBar title="Unidades Próximas" onBack={() => navigate('map')} />
 
       {/* Tab toggle */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #ddd', backgroundColor: '#f5f5f5' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid #D7E3EC', backgroundColor: '#EFF5F9' }}>
         {(['map', 'list'] as const).map(tab => (
           <button
             key={tab}
@@ -165,8 +165,8 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
             style={{
               flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
               backgroundColor: tab === 'list' ? '#fff' : 'transparent',
-              borderBottom: tab === 'list' ? '2px solid #333' : '2px solid transparent',
-              fontSize: 12, fontWeight: tab === 'list' ? 700 : 400, color: tab === 'list' ? '#222' : '#888',
+              borderBottom: tab === 'list' ? '2px solid #155E8A' : '2px solid transparent',
+              fontSize: 12, fontWeight: tab === 'list' ? 700 : 400, color: tab === 'list' ? '#16324F' : '#7C93A6',
             }}
           >
             {tab === 'map' ? '🗺  Mapa' : '☰  Lista'}
@@ -175,16 +175,16 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
       </div>
 
       {/* Filter */}
-      <div style={{ padding: '8px 16px', borderBottom: '1px solid #eee', display: 'flex', gap: 6, overflowX: 'auto' }}>
+      <div style={{ padding: '8px 16px', borderBottom: '1px solid #E7EFF4', display: 'flex', gap: 6, overflowX: 'auto' }}>
         {(['Todos', 'UBS', 'UPA', 'Hospital', 'Particular'] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             style={{
-              padding: '4px 10px', border: '1.5px solid #ccc', borderRadius: 12,
-              backgroundColor: filter === f ? '#333' : '#fff',
-              color: filter === f ? '#fff' : '#555',
-              fontSize: 10, fontFamily: 'monospace', cursor: 'pointer', flexShrink: 0,
+              padding: '4px 10px', border: '1.5px solid #C6D5E0', borderRadius: 12,
+              backgroundColor: filter === f ? '#155E8A' : '#fff',
+              color: filter === f ? '#fff' : '#4E6A80',
+              fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer', flexShrink: 0,
             }}
           >
             {f}
@@ -193,18 +193,18 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
       </div>
 
       {/* Sort */}
-      <div style={{ padding: '6px 16px', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>Ordenar:</span>
+      <div style={{ padding: '6px 16px', borderBottom: '1px solid #E7EFF4', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>Ordenar:</span>
         {[{ k: 'dist' as const, l: 'Distância' }, { k: 'wait' as const, l: 'Espera' }, { k: 'occ' as const, l: 'Lotação' }].map(({ k, l }) => (
           <button
             key={k}
             onClick={() => setSort(k)}
             style={{
               padding: '3px 8px', border: '1px solid', borderRadius: 3, cursor: 'pointer', fontSize: 10,
-              borderColor: sort === k ? '#555' : '#ddd',
-              backgroundColor: sort === k ? '#555' : '#fff',
-              color: sort === k ? '#fff' : '#666',
-              fontFamily: 'monospace',
+              borderColor: sort === k ? '#4E6A80' : '#D7E3EC',
+              backgroundColor: sort === k ? '#4E6A80' : '#fff',
+              color: sort === k ? '#fff' : '#5C7690',
+              fontFamily: 'Inter, system-ui, sans-serif',
             }}
           >
             {l}
@@ -217,23 +217,23 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
           <ListRow key={unit.id} onClick={() => navigate('unitdetail')}>
             {/* Type badge */}
             <div style={{
-              width: 36, height: 36, borderRadius: 8, backgroundColor: '#f0f0f0',
+              width: 36, height: 36, borderRadius: 8, backgroundColor: '#EAF2F6',
               border: `2px solid ${TYPE_COLORS[unit.type]}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              fontSize: 10, fontWeight: 700, color: TYPE_COLORS[unit.type], fontFamily: 'monospace',
+              fontSize: 10, fontWeight: 700, color: TYPE_COLORS[unit.type], fontFamily: 'Inter, system-ui, sans-serif',
             }}>
               {unit.type}
             </div>
 
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', marginBottom: 3 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#0F2A4A', marginBottom: 3 }}>
                 {unit.name}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 3 }}>
                 <OccupancyTag level={unit.occupancy} />
                 <WaitTime minutes={unit.wait} />
               </div>
-              <div style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
                 📍 {unit.distance} · {unit.hours}
               </div>
             </div>
@@ -263,11 +263,11 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
             <div>
-              <div style={{ fontSize: 17, fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em', marginBottom: 3 }}>
+              <div style={{ fontSize: 17, fontWeight: 800, color: '#0F2A4A', letterSpacing: '-0.02em', marginBottom: 3 }}>
                 {unit.name}
               </div>
               <span style={{
-                fontSize: 10, fontWeight: 700, fontFamily: 'monospace',
+                fontSize: 10, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif',
                 color: TYPE_COLORS[unit.type], border: `1.5px solid ${TYPE_COLORS[unit.type]}`,
                 borderRadius: 4, padding: '1px 6px',
               }}>
@@ -276,7 +276,7 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <OccupancyTag level={unit.occupancy} />
-              <div style={{ fontSize: 10, color: '#888', fontFamily: 'monospace', marginTop: 4 }}>
+              <div style={{ fontSize: 10, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', marginTop: 4 }}>
                 Atualizado há 5 min
               </div>
             </div>
@@ -285,26 +285,26 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
 
         {/* Live status */}
         <div style={{
-          backgroundColor: '#fafafa', border: '1.5px solid #e0e0e0',
+          backgroundColor: '#F5F9FB', border: '1.5px solid #DCE7EF',
           borderRadius: 8, padding: '12px', marginBottom: 14,
         }}>
-          <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#888', marginBottom: 8, letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6', marginBottom: 8, letterSpacing: '0.05em' }}>
             STATUS ATUAL
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 24, fontWeight: 900, color: '#dc2626' }}>{unit.wait}</div>
-              <div style={{ fontSize: 9, color: '#888', fontFamily: 'monospace' }}>MIN ESPERA</div>
+              <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>MIN ESPERA</div>
             </div>
-            <div style={{ width: 1, backgroundColor: '#eee' }} />
+            <div style={{ width: 1, backgroundColor: '#E7EFF4' }} />
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#333' }}>87%</div>
-              <div style={{ fontSize: 9, color: '#888', fontFamily: 'monospace' }}>CAPACIDADE</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#155E8A' }}>87%</div>
+              <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>CAPACIDADE</div>
             </div>
-            <div style={{ width: 1, backgroundColor: '#eee' }} />
+            <div style={{ width: 1, backgroundColor: '#E7EFF4' }} />
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#333' }}>12</div>
-              <div style={{ fontSize: 9, color: '#888', fontFamily: 'monospace' }}>NA FILA</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#155E8A' }}>12</div>
+              <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>NA FILA</div>
             </div>
           </div>
         </div>
@@ -322,8 +322,8 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
           <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
             <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
             <div>
-              <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#888' }}>{label.toUpperCase()}</div>
-              <div style={{ fontSize: 13, color: '#222' }}>{value}</div>
+              <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6' }}>{label.toUpperCase()}</div>
+              <div style={{ fontSize: 13, color: '#16324F' }}>{value}</div>
             </div>
           </div>
         ))}
@@ -335,8 +335,8 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
           {['Clínica Geral', 'Pediatria', 'Ortopedia', 'Raio-X', 'Laboratório', 'Farmácia'].map(s => (
             <span key={s} style={{
-              fontSize: 11, border: '1px solid #ccc', borderRadius: 4,
-              padding: '2px 8px', color: '#555', backgroundColor: '#fafafa',
+              fontSize: 11, border: '1px solid #C6D5E0', borderRadius: 4,
+              padding: '2px 8px', color: '#4E6A80', backgroundColor: '#F5F9FB',
             }}>
               {s}
             </span>

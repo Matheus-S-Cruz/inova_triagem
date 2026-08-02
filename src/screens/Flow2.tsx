@@ -72,8 +72,8 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
       <NavBar title="Resultado da Triagem" />
       <Content>
         {/* Demo level picker — wireframe helper */}
-        <div style={{ backgroundColor: '#f0f0f0', border: '1px dashed #ccc', borderRadius: 6, padding: '8px 10px', marginBottom: 12 }}>
-          <div style={{ fontSize: 9, fontFamily: 'monospace', color: '#888', marginBottom: 6 }}>
+        <div style={{ backgroundColor: '#EAF2F6', border: '1px dashed #C6D5E0', borderRadius: 6, padding: '8px 10px', marginBottom: 12 }}>
+          <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6', marginBottom: 6 }}>
             [WIREFRAME] SIMULAR NÍVEL DE RISCO:
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -90,7 +90,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
                   padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700,
                   backgroundColor: color, color: '#fff', cursor: 'pointer',
                   opacity: key === demoLevel ? 1 : 0.4,
-                  fontFamily: 'monospace',
+                  fontFamily: 'Inter, system-ui, sans-serif',
                 }}
               >
                 {label}
@@ -104,7 +104,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
 
         {/* Recommendation */}
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', marginBottom: 6 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#0F2A4A', marginBottom: 6 }}>
             {rec.heading}
           </div>
           <BodyText>{rec.body}</BodyText>
@@ -117,7 +117,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
         {/* Symptom summary */}
         <SectionTitle>Resumo da Triagem</SectionTitle>
         <div style={{
-          backgroundColor: '#fafafa', border: '1px solid #e8e8e8',
+          backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3',
           borderRadius: 6, padding: '10px 12px', marginBottom: 16,
         }}>
           {[
@@ -129,8 +129,8 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
             { label: 'Grupo de risco', value: 'Nenhum' },
           ].map(({ label, value }) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: '#888', fontFamily: 'monospace' }}>{label}</span>
-              <span style={{ fontSize: 12, color: '#222', fontWeight: 600 }}>{value}</span>
+              <span style={{ fontSize: 12, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
+              <span style={{ fontSize: 12, color: '#16324F', fontWeight: 600 }}>{value}</span>
             </div>
           ))}
         </div>
@@ -186,7 +186,7 @@ export function HomeCareScreen({ navigate }: { navigate: Navigate }) {
           }}>
             🏠 Orientação em Casa
           </div>
-          <div style={{ fontSize: 12, color: '#555' }}>Nível Azul</div>
+          <div style={{ fontSize: 12, color: '#4E6A80' }}>Nível Azul</div>
         </div>
 
         <Disclaimer />
@@ -197,12 +197,12 @@ export function HomeCareScreen({ navigate }: { navigate: Navigate }) {
             <div
               key={i}
               style={{
-                display: 'flex', gap: 10, padding: '10px', backgroundColor: '#fafafa',
-                border: '1px solid #e8e8e8', borderRadius: 6, alignItems: 'flex-start',
+                display: 'flex', gap: 10, padding: '10px', backgroundColor: '#F5F9FB',
+                border: '1px solid #E3EDF3', borderRadius: 6, alignItems: 'flex-start',
               }}
             >
               <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
-              <span style={{ fontSize: 12, color: '#333', lineHeight: 1.5 }}>{item.text}</span>
+              <span style={{ fontSize: 12, color: '#155E8A', lineHeight: 1.5 }}>{item.text}</span>
             </div>
           ))}
         </div>
@@ -226,14 +226,14 @@ export function HomeCareScreen({ navigate }: { navigate: Navigate }) {
         {/* Monitoring checklist */}
         <SectionTitle>Monitoramento</SectionTitle>
         <div style={{
-          backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0',
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF',
           borderRadius: 6, padding: '10px 12px', marginBottom: 16,
         }}>
-          <div style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>Próximas 24h — anote suas observações:</div>
+          <div style={{ fontSize: 11, color: '#5C7690', marginBottom: 6 }}>Próximas 24h — anote suas observações:</div>
           {['Temperatura (manhã)', 'Temperatura (tarde)', 'Intensidade dos sintomas', 'Alimentação'].map(item => (
             <div key={item} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: '#444' }}>{item}</span>
-              <div style={{ width: 80, height: 20, border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }} />
+              <span style={{ fontSize: 12, color: '#3A5468' }}>{item}</span>
+              <div style={{ width: 80, height: 20, border: '1px solid #C6D5E0', borderRadius: 3, backgroundColor: '#fff' }} />
             </div>
           ))}
         </div>

@@ -4,6 +4,7 @@ import {
   NavBar, ProgressBar, Btn, Field, OptionItem, CheckboxItem,
   SectionTitle, BodyText, Divider, A11yNote, ScreenWrap, Content,
 } from '../components/Wire'
+import { LogoLockup } from '../components/Logo'
 
 // ─── 1. Tela Inicial ──────────────────────────────────────────────────────────
 
@@ -12,20 +13,12 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
     <ScreenWrap>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
         {/* Header area */}
-        <div style={{ backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0', padding: '32px 24px 24px' }}>
-          {/* Logo placeholder */}
-          <div style={{
-            width: 64, height: 64, backgroundColor: '#ddd', border: '1.5px solid #bbb',
-            borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 14, fontSize: 24,
-          }}>
-            ✚
-          </div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: '#1a1a1a', letterSpacing: '-0.03em' }}>
-            Triagem+
-          </div>
-          <div style={{ fontSize: 12, color: '#777', marginTop: 4, fontFamily: 'monospace' }}>
-            Pré-triagem de saúde
+        <div style={{
+          background: 'linear-gradient(160deg, #EFF5F9 0%, #E4F1EE 100%)',
+          borderBottom: '1px solid #DCE7EF', padding: '32px 24px 24px',
+        }}>
+          <div style={{ marginBottom: 4 }}>
+            <LogoLockup size={40} />
           </div>
         </div>
 
@@ -36,11 +29,11 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
               Relate seus sintomas antes de sair de casa e receba uma recomendação de atendimento.
             </BodyText>
             <div style={{
-              display: 'flex', alignItems: 'flex-start', gap: 8, backgroundColor: '#f5f5f5',
-              border: '1px solid #e0e0e0', borderRadius: 6, padding: '8px 10px', marginBottom: 4,
+              display: 'flex', alignItems: 'flex-start', gap: 8, backgroundColor: '#EFF5F9',
+              border: '1px solid #DCE7EF', borderRadius: 6, padding: '8px 10px', marginBottom: 4,
             }}>
               <span style={{ fontSize: 14, flexShrink: 0 }}>ℹ</span>
-              <span style={{ fontSize: 12, color: '#555', lineHeight: 1.4 }}>
+              <span style={{ fontSize: 12, color: '#4E6A80', lineHeight: 1.4 }}>
                 A triagem pode ser feita de forma anônima, sem necessidade de cadastro ou login.
               </span>
             </div>
@@ -68,12 +61,12 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
                 key={item.label}
                 onClick={() => navigate(item.to)}
                 style={{
-                  flex: 1, border: '1.5px solid #ddd', borderRadius: 8, padding: '10px 4px',
-                  backgroundColor: '#fafafa', cursor: 'pointer', textAlign: 'center',
+                  flex: 1, border: '1.5px solid #D7E3EC', borderRadius: 8, padding: '10px 4px',
+                  backgroundColor: '#F5F9FB', cursor: 'pointer', textAlign: 'center',
                 }}
               >
                 <div style={{ fontSize: 20 }}>{item.icon}</div>
-                <div style={{ fontSize: 10, color: '#666', marginTop: 4, whiteSpace: 'pre-line', lineHeight: 1.3 }}>{item.label}</div>
+                <div style={{ fontSize: 10, color: '#5C7690', marginTop: 4, whiteSpace: 'pre-line', lineHeight: 1.3 }}>{item.label}</div>
               </button>
             ))}
           </div>
@@ -99,8 +92,8 @@ export function LGPDScreen({ navigate }: { navigate: Navigate }) {
       <Content>
         <SectionTitle>Uso de Dados de Saúde — LGPD</SectionTitle>
         <div style={{
-          backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0', borderRadius: 6,
-          padding: '12px', marginBottom: 12, fontSize: 12, color: '#444', lineHeight: 1.6,
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF', borderRadius: 6,
+          padding: '12px', marginBottom: 12, fontSize: 12, color: '#3A5468', lineHeight: 1.6,
         }}>
           <p style={{ margin: '0 0 8px' }}>
             <strong>Por que coletamos dados?</strong> Para processar sua triagem e gerar
@@ -138,7 +131,7 @@ export function LGPDScreen({ navigate }: { navigate: Navigate }) {
           <CheckboxItem label="Desejo receber informações de saúde da Secretaria Municipal (opcional)" />
         </div>
 
-        <div style={{ fontSize: 11, color: '#aaa', fontFamily: 'monospace', marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif', marginBottom: 16 }}>
           Ao continuar, você também concorda com os Termos de Uso.
         </div>
 
@@ -173,10 +166,10 @@ export function Q1Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={1} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             Qual é o seu principal sintoma?
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>Selecione o que melhor descreve sua queixa</div>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>Selecione o que melhor descreve sua queixa</div>
         </div>
 
         {SYMPTOMS.map(s => (
@@ -212,10 +205,10 @@ export function Q2Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={2} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             Há quanto tempo o sintoma começou?
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>Considere o início do sintoma principal</div>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>Considere o início do sintoma principal</div>
         </div>
 
         {DURATIONS.map(d => (
@@ -247,10 +240,10 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={3} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             Sobre seus sintomas agora:
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>Responda cada item com Sim ou Não</div>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>Responda cada item com Sim ou Não</div>
         </div>
 
         {[
@@ -259,7 +252,7 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
           { label: 'Tem dificuldade para respirar / falta de ar?', val: falta, set: setFalta },
         ].map(({ label, val, set }) => (
           <div key={label} style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#222', marginBottom: 6 }}>{label}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#16324F', marginBottom: 6 }}>{label}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <OptionItem label="Sim" selected={val === 'sim'} onClick={() => set('sim')} />
               <OptionItem label="Não" selected={val === 'nao'} onClick={() => set('nao')} />
@@ -273,7 +266,7 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
             border: '1.5px dashed #dc2626', borderRadius: 6, padding: '8px 10px',
             backgroundColor: '#fef2f2', marginBottom: 12,
           }}>
-            <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#dc2626', fontWeight: 700, marginBottom: 2 }}>
+            <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#dc2626', fontWeight: 700, marginBottom: 2 }}>
               ↳ PERGUNTA CONDICIONAL
             </div>
             <div style={{ fontSize: 11, color: '#991b1b' }}>
@@ -300,10 +293,10 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={4} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             Os sintomas pioraram rapidamente nas últimas horas?
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>
             Ex.: febre que subiu muito, dor que aumentou, nova falta de ar
           </div>
         </div>
@@ -318,7 +311,7 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
             border: '1.5px dashed #ea580c', borderRadius: 6, padding: '8px 10px',
             backgroundColor: '#fff7ed', marginBottom: 12,
           }}>
-            <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#ea580c', fontWeight: 700, marginBottom: 2 }}>
+            <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#ea580c', fontWeight: 700, marginBottom: 2 }}>
               ↳ PERGUNTA CONDICIONAL
             </div>
             <div style={{ fontSize: 11, color: '#9a3412' }}>
@@ -355,10 +348,10 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={5} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             O paciente pertence a algum grupo de risco?
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>Pode selecionar mais de uma opção</div>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>Pode selecionar mais de uma opção</div>
         </div>
 
         {GROUPS.map(g => (
@@ -368,13 +361,13 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
         ))}
 
         <div style={{
-          border: '1.5px dashed #888', borderRadius: 6, padding: '8px 10px',
-          backgroundColor: '#f5f5f5', marginBottom: 12, marginTop: 4,
+          border: '1.5px dashed #7C93A6', borderRadius: 6, padding: '8px 10px',
+          backgroundColor: '#EFF5F9', marginBottom: 12, marginTop: 4,
         }}>
-          <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#666', fontWeight: 700, marginBottom: 2 }}>
+          <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#5C7690', fontWeight: 700, marginBottom: 2 }}>
             ↳ PERGUNTA CONDICIONAL
           </div>
-          <div style={{ fontSize: 11, color: '#555' }}>
+          <div style={{ fontSize: 11, color: '#4E6A80' }}>
             Se idoso ou criança selecionados → algoritmo aplica pontuação de risco aumentada.
             Se gestante → encaminhamento preferencial para maternidade.
           </div>
@@ -396,10 +389,10 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
       <ProgressBar current={6} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
             Está em uso de algum medicamento?
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>
+          <div style={{ fontSize: 12, color: '#7C93A6' }}>
             Inclua remédios de uso contínuo, automedicação ou fitoterápicos
           </div>
         </div>
@@ -413,24 +406,24 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
           <div style={{ marginBottom: 16 }}>
             <Field label="Quais medicamentos? (opcional)" placeholder="Ex: Losartana 50mg, Paracetamol..." />
             <div style={{
-              border: '1.5px dashed #888', borderRadius: 6, padding: '8px 10px',
-              backgroundColor: '#f5f5f5', marginBottom: 8,
+              border: '1.5px dashed #7C93A6', borderRadius: 6, padding: '8px 10px',
+              backgroundColor: '#EFF5F9', marginBottom: 8,
             }}>
-              <div style={{ fontSize: 10, fontFamily: 'monospace', color: '#666', fontWeight: 700, marginBottom: 2 }}>
+              <div style={{ fontSize: 10, fontFamily: 'Inter, system-ui, sans-serif', color: '#5C7690', fontWeight: 700, marginBottom: 2 }}>
                 ↳ PERGUNTA CONDICIONAL
               </div>
-              <div style={{ fontSize: 11, color: '#555' }}>
+              <div style={{ fontSize: 11, color: '#4E6A80' }}>
                 Anticoagulantes / imunossupressores identificados → alerta de risco elevado adicionado ao resultado.
               </div>
             </div>
           </div>
         )}
 
-        <div style={{ backgroundColor: '#f0f0f0', border: '1px solid #ddd', borderRadius: 6, padding: '10px', marginBottom: 16 }}>
-          <div style={{ fontSize: 11, color: '#555', textAlign: 'center' }}>
+        <div style={{ backgroundColor: '#EAF2F6', border: '1px solid #D7E3EC', borderRadius: 6, padding: '10px', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: '#4E6A80', textAlign: 'center' }}>
             ✅ Todas as perguntas respondidas
           </div>
-          <div style={{ fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2, fontFamily: 'monospace' }}>
+          <div style={{ fontSize: 10, color: '#7C93A6', textAlign: 'center', marginTop: 2, fontFamily: 'Inter, system-ui, sans-serif' }}>
             O algoritmo irá calcular sua classificação de risco
           </div>
         </div>
