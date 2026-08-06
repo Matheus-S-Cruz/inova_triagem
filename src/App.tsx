@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PhoneFrame } from './components/Wire'
+import { MobilePage } from './components/Wire'
 import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1'
 import { ResultScreen, HomeCareScreen } from './screens/Flow2'
 import { MapScreen, UnitListScreen, UnitDetailScreen } from './screens/Flow3'
@@ -18,7 +18,6 @@ export type Navigate = (to: ScreenId) => void
 const FLOWS = [
   {
     label: 'Fluxo 1 — Entrada e Triagem',
-    color: '#6b7280',
     screens: [
       { id: 'home', label: '1. Tela Inicial' },
       { id: 'lgpd', label: '2. Consentimento LGPD' },
@@ -32,7 +31,6 @@ const FLOWS = [
   },
   {
     label: 'Fluxo 2 — Resultado',
-    color: '#6b7280',
     screens: [
       { id: 'result', label: '4. Classificação de Risco' },
       { id: 'homecare', label: '5. Cuidados em Casa' },
@@ -40,7 +38,6 @@ const FLOWS = [
   },
   {
     label: 'Fluxo 3 — Mapa e Lotação',
-    color: '#6b7280',
     screens: [
       { id: 'map', label: '6. Mapa de Unidades' },
       { id: 'unitlist', label: '7. Lista de Unidades' },
@@ -49,7 +46,6 @@ const FLOWS = [
   },
   {
     label: 'Fluxo 4 — Perfil e Histórico',
-    color: '#6b7280',
     screens: [
       { id: 'register', label: '9. Cadastro' },
       { id: 'profile', label: '10. Perfil do Usuário' },
@@ -58,7 +54,6 @@ const FLOWS = [
   },
   {
     label: 'Fluxo 5 — Painel da Unidade',
-    color: '#6b7280',
     screens: [
       { id: 'teamlogin', label: '12. Login da Equipe' },
       { id: 'occupancy', label: '13. Atualizar Lotação' },
@@ -94,18 +89,67 @@ function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Naviga
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenId>('home')
-  const navigate: Navigate = (to) => setScreen(to)
+  const [navOpen, setNavOpen] = useState(false) // drawer mobile (≤860px)
+  const [navCollapsed, setNavCollapsed] = useState(false) // menu minimizado (desktop, >860px)
+
+  const navigate: Navigate = (to) => {
+    setScreen(to)
+    setNavOpen(false) // fecha o drawer ao navegar, em telas pequenas
+  }
 
   const currentLabel = FLOWS.flatMap(f => f.screens).find(s => s.id === screen)?.label ?? ''
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#DDE9EF', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      {/* Sidebar navigator */}
-      <aside style={{
-        width: 230, backgroundColor: '#0F2A4A', color: '#C6D5E0',
-        overflowY: 'auto', flexShrink: 0, borderRight: '1px solid #155E8A',
-      }}>
-        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #155E8A' }}>
+    <div className="app-shell" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* Topbar só aparece em telas estreitas (ver .app-topbar no index.css) */}
+      <div className="app-topbar">
+        <button
+          onClick={() => setNavOpen(v => !v)}
+          aria-label="Abrir navegação de telas"
+          style={{
+            background: 'none', border: '1px solid #155E8A', borderRadius: 6,
+            color: '#fff', fontSize: 16, padding: '4px 10px', cursor: 'pointer',
+          }}
+        >
+          ☰
+        </button>
+        <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>Triagem+</span>
+      </div>
+
+      {/* Sidebar navigator (ferramenta de dev — não faz parte do produto final) */}
+      <aside
+        className={`app-sidebar${navOpen ? ' open' : ''}${navCollapsed ? ' collapsed' : ''}`}
+        style={{ backgroundColor: '#0F2A4A', color: '#C6D5E0', overflowY: 'auto' }}
+      >
+        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #155E8A', position: 'relative' }}>
+          {/* X — fecha o drawer no mobile */}
+          {navOpen && (
+            <button
+              onClick={() => setNavOpen(false)}
+              aria-label="Fechar navegação"
+              style={{
+                position: 'absolute', top: 10, right: 10,
+                background: 'none', border: '1px solid #155E8A', borderRadius: 6,
+                color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
+              }}
+            >
+              ✕
+            </button>
+          )}
+          {/* ‹ — minimiza o menu no desktop */}
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setNavCollapsed(true)}
+            aria-label="Minimizar menu"
+            style={{
+              position: 'absolute', top: 10, right: 10,
+              background: 'none', border: '1px solid #155E8A', borderRadius: 6,
+              color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            ‹
+          </button>
           <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80', letterSpacing: '0.08em', marginBottom: 3 }}>
             PROTÓTIPO LO-FI
           </div>
@@ -153,21 +197,41 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main canvas */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '32px 24px', overflowY: 'auto' }}>
-        {/* Frame label */}
-        <div style={{ marginBottom: 12, fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#5C7690', textAlign: 'center' }}>
+      {/* › — reabre o menu minimizado (só existe em desktop, quando navCollapsed) */}
+      {navCollapsed && (
+        <button
+          className="sidebar-reopen-btn"
+          onClick={() => setNavCollapsed(false)}
+          aria-label="Expandir menu"
+          style={{
+            position: 'fixed', top: 16, left: 8, zIndex: 20,
+            background: '#0F2A4A', border: '1px solid #155E8A', borderRadius: 6,
+            color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
+            alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          ›
+        </button>
+      )}
+
+      {/* Fundo escurecido — clicar fora do menu também fecha (só existe em telas estreitas) */}
+      {navOpen && <div className="app-backdrop" onClick={() => setNavOpen(false)} />}
+
+      {/* Main: página web comum, ocupando 100% do espaço, sem moldura de device */}
+      <main className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: 0, overflowY: 'auto' }}>
+        {/* Frame label — só visual de dev, pode remover se quiser 100% "produto" */}
+        <div style={{ padding: '8px 0', fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#5C7690', textAlign: 'center' }}>
           <span style={{ backgroundColor: '#B9C8D4', padding: '2px 8px', borderRadius: 2 }}>
             {currentLabel}
           </span>
         </div>
 
-        <PhoneFrame>
+        <MobilePage>
           <ScreenRouter screen={screen} navigate={navigate} />
-        </PhoneFrame>
+        </MobilePage>
 
         {/* Quick-jump arrows */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 16, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, padding: '16px 0', alignItems: 'center', justifyContent: 'center' }}>
           {(() => {
             const all = FLOWS.flatMap(f => f.screens)
             const idx = all.findIndex(s => s.id === screen)

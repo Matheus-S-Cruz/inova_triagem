@@ -1,49 +1,14 @@
 import { type ReactNode, type CSSProperties } from 'react'
 
-// ─── Phone shell ──────────────────────────────────────────────────────────────
+// ─── Mobile page shell ──────────────────────────────────────────────────────
+// Substitui o antigo PhoneFrame (moldura de iPhone falsa). Agora é só um
+// container de página: full-bleed em telas de celular reais, e um "cartão"
+// centralizado em telas largas (sem fingir ser um device).
 
-export function PhoneFrame({ children }: { children: ReactNode }) {
+export function MobilePage({ children }: { children: ReactNode }) {
   return (
-    <div style={{
-      width: 375, backgroundColor: '#0F2A4A', borderRadius: 44,
-      padding: '10px 4px', boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 0 0 1px #3A5468',
-      position: 'relative', flexShrink: 0,
-    }}>
-      {/* Dynamic island */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-        <div style={{ width: 120, height: 30, backgroundColor: '#0F2A4A', borderRadius: 20 }} />
-      </div>
-      {/* Screen area */}
-      <div style={{
-        backgroundColor: '#fff', borderRadius: 34, overflow: 'hidden',
-        height: 750, display: 'flex', flexDirection: 'column',
-      }}>
-        <StatusBar />
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-          {children}
-        </div>
-      </div>
-      {/* Home indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-        <div style={{ width: 100, height: 4, backgroundColor: '#3A5468', borderRadius: 2 }} />
-      </div>
-    </div>
-  )
-}
-
-export function StatusBar() {
-  return (
-    <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '8px 20px 4px', backgroundColor: '#EFF5F9',
-      fontSize: 11, fontWeight: 600, color: '#155E8A', fontFamily: 'Inter, system-ui, sans-serif',
-    }}>
-      <span>9:41</span>
-      <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-        <span style={{ fontSize: 9 }}>▪▪▪▪</span>
-        <span style={{ fontSize: 9 }}>WiFi</span>
-        <span style={{ fontSize: 9 }}>🔋</span>
-      </div>
+    <div className="mobile-page">
+      {children}
     </div>
   )
 }
