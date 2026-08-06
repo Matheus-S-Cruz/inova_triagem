@@ -147,21 +147,62 @@ export function Btn({
 
 // ─── Form elements ────────────────────────────────────────────────────────────
 
-export function Field({ label, placeholder = '____________', hint }: {
-  label: string; placeholder?: string; hint?: string
+/**
+ * Campo de formulário. Sem `onChange`, funciona como no wireframe original
+ * (apenas exibe o `placeholder` como texto estático). Com `value` +
+ * `onChange`, vira um input controlado de verdade — usado nas telas de
+ * Cadastro/Perfil (portado da branch FrontEnd) para capturar dados reais.
+ */
+export function Field({
+  label, placeholder = '____________', hint, value, onChange, type = 'text', error, required,
+}: {
+  label: string
+  placeholder?: string
+  hint?: string
+  value?: string
+  onChange?: (value: string) => void
+  type?: 'text' | 'tel' | 'email'
+  error?: string
+  required?: boolean
 }) {
+  const isControlled = onChange !== undefined
   return (
     <div style={{ marginBottom: 14 }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: '#16324F', marginBottom: 5, fontFamily: 'Inter, system-ui, sans-serif' }}>
         {label}
+        {required && <span style={{ color: '#DC2626' }}> *</span>}
       </div>
-      <div style={{
-        padding: '10px 12px', border: '1.5px solid #DCE7EF', borderRadius: 10,
-        backgroundColor: '#fff', fontSize: 13, color: '#9AAEBE',
-      }}>
-        {placeholder}
-      </div>
-      {hint && <div style={{ fontSize: 10.5, color: '#7C93A6', marginTop: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>{hint}</div>}
+
+      {isControlled ? (
+        <input
+          type={type}
+          value={value ?? ''}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            padding: '10px 12px', border: `1.5px solid ${error ? '#DC2626' : '#DCE7EF'}`,
+            borderRadius: 10, backgroundColor: error ? '#FEF2F2' : '#fff',
+            fontSize: 13, color: '#16324F', fontFamily: 'Inter, system-ui, sans-serif',
+            outline: 'none',
+          }}
+        />
+      ) : (
+        <div style={{
+          padding: '10px 12px', border: '1.5px solid #DCE7EF', borderRadius: 10,
+          backgroundColor: '#fff', fontSize: 13, color: '#9AAEBE',
+        }}>
+          {placeholder}
+        </div>
+      )}
+
+      {error ? (
+        <div style={{ fontSize: 10.5, color: '#DC2626', marginTop: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>
+          ⚠ {error}
+        </div>
+      ) : hint ? (
+        <div style={{ fontSize: 10.5, color: '#7C93A6', marginTop: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>{hint}</div>
+      ) : null}
     </div>
   )
 }

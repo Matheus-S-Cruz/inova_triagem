@@ -5,10 +5,15 @@ import {
   SectionTitle, BodyText, Divider, A11yNote, ScreenWrap, Content,
 } from '../components/Wire'
 import { LogoLockup } from '../components/Logo'
+import { UserStorage } from '../lib/storage'
 
 // ─── 1. Tela Inicial ──────────────────────────────────────────────────────────
 
 export function HomeScreen({ navigate }: { navigate: Navigate }) {
+  // Mesma checagem que existia no init() da branch FrontEnd: se já há uma
+  // conta salva, o atalho leva direto ao Perfil em vez de abrir o Cadastro.
+  const hasAccount = !!UserStorage.get()
+
   return (
     <ScreenWrap>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
@@ -44,7 +49,11 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
           {/* CTA buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
             <Btn label="✚  Iniciar Triagem" onClick={() => navigate('lgpd')} variant="primary" />
-            <Btn label="Entrar / Criar Conta" onClick={() => navigate('register')} variant="secondary" />
+            <Btn
+              label={hasAccount ? 'Meu Perfil' : 'Entrar / Criar Conta'}
+              onClick={() => navigate(hasAccount ? 'profile' : 'register')}
+              variant="secondary"
+            />
           </div>
 
           <Divider />
