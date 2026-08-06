@@ -6,6 +6,7 @@ import {
   ScreenWrap, Content, ListRow,
 } from '../components/Wire'
 import { UserStorage, emptyUsuario, calcAge, formatMonthYear, type Usuario } from '../lib/storage'
+import { useTriage } from '../context/TriageContext'
 
 // ─── 9. Cadastro ──────────────────────────────────────────────────────────────
 // Portado da branch FrontEnd (index.html standalone): fluxo em 2 etapas
@@ -195,6 +196,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Usuario | null>(saved)
   const [justSaved, setJustSaved] = useState(false)
+  const { resetAnswers } = useTriage()
 
   const update = (key: keyof Usuario) => (value: string) =>
     setForm(prev => (prev ? { ...prev, [key]: value } : prev))
@@ -216,6 +218,11 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const handleLogout = () => {
     UserStorage.clear()
     navigate('home')
+  }
+
+  const startNewTriage = () => {
+    resetAnswers()
+    navigate('lgpd')
   }
 
   // Sem conta salva (uso anônimo) — convida a criar conta.
@@ -354,7 +361,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Btn label="Ver histórico de triagens" onClick={() => navigate('history')} variant="secondary" />
-            <Btn label="Iniciar nova triagem" onClick={() => navigate('lgpd')} variant="primary" />
+            <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
             <Btn label="Sair da conta" onClick={handleLogout} variant="ghost" />
           </div>
         )}
@@ -384,6 +391,12 @@ const HISTORY_ITEMS = [
 
 export function HistoryScreen({ navigate }: { navigate: Navigate }) {
   const [selected, setSelected] = useState<number | null>(null)
+  const { resetAnswers } = useTriage()
+
+  const startNewTriage = () => {
+    resetAnswers()
+    navigate('lgpd')
+  }
 
   return (
     <ScreenWrap>
@@ -436,7 +449,7 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
             ))}
 
             <div style={{ marginTop: 16 }}>
-              <Btn label="Iniciar nova triagem" onClick={() => navigate('lgpd')} variant="primary" />
+              <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
             </div>
 
             <A11yNote notes={[
@@ -455,6 +468,13 @@ function HistoryDetail({ item, onBack, navigate }: {
   onBack: () => void
   navigate: Navigate
 }) {
+  const { resetAnswers } = useTriage()
+
+  const redoTriage = () => {
+    resetAnswers()
+    navigate('lgpd')
+  }
+
   return (
     <>
       <button onClick={onBack} style={{
@@ -502,7 +522,7 @@ function HistoryDetail({ item, onBack, navigate }: {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Btn label="Refazer triagem" onClick={() => navigate('lgpd')} variant="primary" />
+        <Btn label="Refazer triagem" onClick={redoTriage} variant="primary" />
         <Btn label="Ver unidades próximas" onClick={() => navigate('unitlist')} variant="secondary" />
       </div>
     </>

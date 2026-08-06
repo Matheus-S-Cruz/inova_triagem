@@ -3,11 +3,13 @@ import {
   NavBar, Btn, RiskBadge, Divider, SectionTitle,
   Disclaimer, A11yNote, ScreenWrap, Content, BodyText,
 } from '../components/Wire'
+import { useTriage } from '../context/TriageContext'
+import type { RiskLevel } from '../lib/triage'
 
 // ─── 4. Resultado da Classificação ────────────────────────────────────────────
 
-const RECOMMENDATIONS: Record<string, {
-  level: 'red' | 'orange' | 'yellow' | 'green' | 'blue'
+const RECOMMENDATIONS: Record<RiskLevel, {
+  level: RiskLevel
   heading: string
   body: string
   cta: string
@@ -19,9 +21,9 @@ const RECOMMENDATIONS: Record<string, {
     level: 'red',
     heading: 'Procure emergência imediatamente',
     body: 'Seus sintomas indicam risco imediato de vida. Ligue para o SAMU (192) ou vá ao pronto-socorro mais próximo agora. Não espere.',
-    cta: 'Ligar SAMU (192)',
+    cta: 'Ver hospitais próximos',
     ctaTarget: 'map',
-    secondary: 'Ver hospitais próximos',
+    secondary: 'Ver no mapa',
     secondaryTarget: 'map',
   },
   orange: {
@@ -63,43 +65,21 @@ const RECOMMENDATIONS: Record<string, {
 }
 
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
-  // Demo: cycling through risk levels via a selector
-  const demoLevel = 'orange' // default demo
-  const rec = RECOMMENDATIONS[demoLevel]
+  const { answers, result, resetAnswers } = useTriage()
+  const rec = RECOMMENDATIONS[result.level]
+
+  const startNewTriage = () => {
+    resetAnswers()
+    navigate('q1')
+  }
+
+  const yesNoLabel = (v: 'sim' | 'nao' | null) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : '—')
 
   return (
     <ScreenWrap>
       <NavBar title="Resultado da Triagem" />
       <Content>
-        {/* Demo level picker — wireframe helper */}
-        <div style={{ backgroundColor: '#EAF2F6', border: '1px dashed #C6D5E0', borderRadius: 6, padding: '8px 10px', marginBottom: 12 }}>
-          <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#7C93A6', marginBottom: 6 }}>
-            [WIREFRAME] SIMULAR NÍVEL DE RISCO:
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-            {[
-              { key: 'red', label: 'Vermelho', color: '#dc2626' },
-              { key: 'orange', label: 'Laranja', color: '#ea580c' },
-              { key: 'yellow', label: 'Amarelo', color: '#ca8a04' },
-              { key: 'green', label: 'Verde', color: '#16a34a' },
-              { key: 'blue', label: 'Azul', color: '#2563eb' },
-            ].map(({ key, label, color }) => (
-              <span
-                key={key}
-                style={{
-                  padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700,
-                  backgroundColor: color, color: '#fff', cursor: 'pointer',
-                  opacity: key === demoLevel ? 1 : 0.4,
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                }}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Risk badge */}
+        {/* Risk badge — classificação real, calculada pelo algoritmo de triagem */}
         <RiskBadge level={rec.level} />
 
         {/* Recommendation */}
@@ -114,23 +94,39 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
 
         <Divider />
 
-        {/* Symptom summary */}
+        {/* Por que essa classificação? */}
+        <SectionTitle>Por que essa classificação?</SectionTitle>
+        <div style={{
+          backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF',
+          borderRadius: 6, padding: '10px 12px', marginBottom: 16,
+        }}>
+          {result.reasons.map((reason, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, marginBottom: i < result.reasons.length - 1 ? 6 : 0 }}>
+              <span style={{ color: '#155E8A', fontSize: 12, flexShrink: 0 }}>●</span>
+              <span style={{ fontSize: 12, color: '#3A5468', lineHeight: 1.4 }}>{reason}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Symptom summary — respostas reais dadas pelo usuário */}
         <SectionTitle>Resumo da Triagem</SectionTitle>
         <div style={{
           backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3',
           borderRadius: 6, padding: '10px 12px', marginBottom: 16,
         }}>
           {[
-            { label: 'Sintoma', value: 'Falta de ar' },
-            { label: 'Duração', value: 'Hoje (6–24h)' },
-            { label: 'Febre', value: 'Sim' },
-            { label: 'Dor intensa', value: 'Não' },
-            { label: 'Piora rápida', value: 'Sim' },
-            { label: 'Grupo de risco', value: 'Nenhum' },
+            { label: 'Sintoma', value: answers.symptom || answers.symptomOther || '—' },
+            { label: 'Duração', value: answers.duration || '—' },
+            { label: 'Febre', value: yesNoLabel(answers.fever) },
+            { label: 'Dor intensa', value: yesNoLabel(answers.intensePain) },
+            { label: 'Falta de ar', value: yesNoLabel(answers.breathingDifficulty) },
+            { label: 'Piora rápida', value: yesNoLabel(answers.rapidWorsening) },
+            { label: 'Grupo de risco', value: answers.vulnerableGroups.length ? answers.vulnerableGroups.join(', ') : 'Nenhum' },
+            { label: 'Em uso de medicamento', value: yesNoLabel(answers.usingMedication) },
           ].map(({ label, value }) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
-              <span style={{ fontSize: 12, color: '#16324F', fontWeight: 600 }}>{value}</span>
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
+              <span style={{ fontSize: 12, color: '#16324F', fontWeight: 600, textAlign: 'right' }}>{value}</span>
             </div>
           ))}
         </div>
@@ -141,7 +137,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
           {rec.secondary && rec.secondaryTarget && (
             <Btn label={rec.secondary} onClick={() => navigate(rec.secondaryTarget!)} variant="secondary" />
           )}
-          <Btn label="Nova triagem" onClick={() => navigate('q1')} variant="ghost" />
+          <Btn label="Nova triagem" onClick={startNewTriage} variant="ghost" />
         </div>
 
         <A11yNote notes={[
@@ -174,6 +170,13 @@ const ALERT_SIGNS = [
 ]
 
 export function HomeCareScreen({ navigate }: { navigate: Navigate }) {
+  const { resetAnswers } = useTriage()
+
+  const startNewTriage = () => {
+    resetAnswers()
+    navigate('q1')
+  }
+
   return (
     <ScreenWrap>
       <NavBar title="Cuidados em Casa" onBack={() => navigate('result')} />
@@ -242,7 +245,7 @@ export function HomeCareScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Btn label="Agendar UBS (se piorar)" onClick={() => navigate('unitlist')} variant="secondary" />
           <Btn label="Buscar unidades próximas" onClick={() => navigate('map')} variant="ghost" />
-          <Btn label="Nova triagem" onClick={() => navigate('q1')} variant="ghost" />
+          <Btn label="Nova triagem" onClick={startNewTriage} variant="ghost" />
         </div>
 
         <A11yNote notes={[

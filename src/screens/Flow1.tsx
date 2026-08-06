@@ -6,6 +6,7 @@ import {
 } from '../components/Wire'
 import { LogoLockup } from '../components/Logo'
 import { UserStorage } from '../lib/storage'
+import { useTriage } from '../context/TriageContext'
 
 // ─── 1. Tela Inicial ──────────────────────────────────────────────────────────
 
@@ -13,6 +14,12 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
   // Mesma checagem que existia no init() da branch FrontEnd: se já há uma
   // conta salva, o atalho leva direto ao Perfil em vez de abrir o Cadastro.
   const hasAccount = !!UserStorage.get()
+  const { resetAnswers } = useTriage()
+
+  const startTriage = () => {
+    resetAnswers() // começa uma nova triagem do zero
+    navigate('lgpd')
+  }
 
   return (
     <ScreenWrap>
@@ -48,7 +55,7 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
 
           {/* CTA buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-            <Btn label="✚  Iniciar Triagem" onClick={() => navigate('lgpd')} variant="primary" />
+            <Btn label="✚  Iniciar Triagem" onClick={startTriage} variant="primary" />
             <Btn
               label={hasAccount ? 'Meu Perfil' : 'Entrar / Criar Conta'}
               onClick={() => navigate(hasAccount ? 'profile' : 'register')}
@@ -168,7 +175,9 @@ const SYMPTOMS = [
 ]
 
 export function Q1Screen({ navigate }: { navigate: Navigate }) {
-  const [selected, setSelected] = useState<string | null>(null)
+  const { answers, updateAnswers } = useTriage()
+  const canProceed = !!answers.symptom || !!answers.symptomOther.trim()
+
   return (
     <ScreenWrap>
       <NavBar title="Triagem" onBack={() => navigate('lgpd')} />
@@ -182,13 +191,18 @@ export function Q1Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         {SYMPTOMS.map(s => (
-          <OptionItem key={s} label={s} selected={selected === s} onClick={() => setSelected(s)} />
+          <OptionItem key={s} label={s} selected={answers.symptom === s} onClick={() => updateAnswers({ symptom: s })} />
         ))}
 
-        <Field label="Ou descreva com suas palavras" placeholder="Ex: dor ao engolir..." />
+        <Field
+          label="Ou descreva com suas palavras"
+          placeholder="Ex: dor ao engolir..."
+          value={answers.symptomOther}
+          onChange={(v) => updateAnswers({ symptomOther: v })}
+        />
 
         <div style={{ marginTop: 8 }}>
-          <Btn label="Próxima →" onClick={() => selected && navigate('q2')} variant={selected ? 'primary' : 'ghost'} />
+          <Btn label="Próxima →" onClick={() => canProceed && navigate('q2')} variant={canProceed ? 'primary' : 'ghost'} />
         </div>
 
         <A11yNote notes={[
@@ -207,7 +221,7 @@ const DURATIONS = [
 ]
 
 export function Q2Screen({ navigate }: { navigate: Navigate }) {
-  const [selected, setSelected] = useState<string | null>(null)
+  const { answers, updateAnswers } = useTriage()
   return (
     <ScreenWrap>
       <NavBar title="Triagem" onBack={() => navigate('q1')} />
@@ -221,11 +235,11 @@ export function Q2Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         {DURATIONS.map(d => (
-          <OptionItem key={d} label={d} selected={selected === d} onClick={() => setSelected(d)} />
+          <OptionItem key={d} label={d} selected={answers.duration === d} onClick={() => updateAnswers({ duration: d })} />
         ))}
 
         <div style={{ marginTop: 8 }}>
-          <Btn label="Próxima →" onClick={() => selected && navigate('q3')} variant={selected ? 'primary' : 'ghost'} />
+          <Btn label="Próxima →" onClick={() => answers.duration && navigate('q3')} variant={answers.duration ? 'primary' : 'ghost'} />
         </div>
       </Content>
     </ScreenWrap>
@@ -234,14 +248,9 @@ export function Q2Screen({ navigate }: { navigate: Navigate }) {
 
 // ─── 3c. Febre / Dor / Falta de ar ───────────────────────────────────────────
 
-type YesNo = 'sim' | 'nao' | null
-
 export function Q3Screen({ navigate }: { navigate: Navigate }) {
-  const [febre, setFebre] = useState<YesNo>(null)
-  const [dor, setDor] = useState<YesNo>(null)
-  const [falta, setFalta] = useState<YesNo>(null)
-
-  const allAnswered = febre && dor && falta
+  const { answers, updateAnswers } = useTriage()
+  const allAnswered = answers.fever && answers.intensePain && answers.breathingDifficulty
 
   return (
     <ScreenWrap>
@@ -256,21 +265,21 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         {[
-          { label: 'Tem febre (acima de 37,8°C)?', val: febre, set: setFebre },
-          { label: 'Sente dor intensa (≥7 em 10)?', val: dor, set: setDor },
-          { label: 'Tem dificuldade para respirar / falta de ar?', val: falta, set: setFalta },
-        ].map(({ label, val, set }) => (
+          { label: 'Tem febre (acima de 37,8°C)?', val: answers.fever, key: 'fever' as const },
+          { label: 'Sente dor intensa (≥7 em 10)?', val: answers.intensePain, key: 'intensePain' as const },
+          { label: 'Tem dificuldade para respirar / falta de ar?', val: answers.breathingDifficulty, key: 'breathingDifficulty' as const },
+        ].map(({ label, val, key }) => (
           <div key={label} style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#16324F', marginBottom: 6 }}>{label}</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <OptionItem label="Sim" selected={val === 'sim'} onClick={() => set('sim')} />
-              <OptionItem label="Não" selected={val === 'nao'} onClick={() => set('nao')} />
+              <OptionItem label="Sim" selected={val === 'sim'} onClick={() => updateAnswers({ [key]: 'sim' })} />
+              <OptionItem label="Não" selected={val === 'nao'} onClick={() => updateAnswers({ [key]: 'nao' })} />
             </div>
           </div>
         ))}
 
         {/* Conditional branch note */}
-        {falta === 'sim' && (
+        {answers.breathingDifficulty === 'sim' && (
           <div style={{
             border: '1.5px dashed #dc2626', borderRadius: 6, padding: '8px 10px',
             backgroundColor: '#fef2f2', marginBottom: 12,
@@ -295,7 +304,7 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
 // ─── 3d. Piora Rápida ─────────────────────────────────────────────────────────
 
 export function Q4Screen({ navigate }: { navigate: Navigate }) {
-  const [selected, setSelected] = useState<YesNo>(null)
+  const { answers, updateAnswers } = useTriage()
   return (
     <ScreenWrap>
       <NavBar title="Triagem" onBack={() => navigate('q3')} />
@@ -311,11 +320,11 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-          <OptionItem label="Sim — piorou rápido" selected={selected === 'sim'} onClick={() => setSelected('sim')} />
-          <OptionItem label="Não — estável ou melhorando" selected={selected === 'nao'} onClick={() => setSelected('nao')} />
+          <OptionItem label="Sim — piorou rápido" selected={answers.rapidWorsening === 'sim'} onClick={() => updateAnswers({ rapidWorsening: 'sim' })} />
+          <OptionItem label="Não — estável ou melhorando" selected={answers.rapidWorsening === 'nao'} onClick={() => updateAnswers({ rapidWorsening: 'nao' })} />
         </div>
 
-        {selected === 'sim' && (
+        {answers.rapidWorsening === 'sim' && (
           <div style={{
             border: '1.5px dashed #ea580c', borderRadius: 6, padding: '8px 10px',
             backgroundColor: '#fff7ed', marginBottom: 12,
@@ -329,7 +338,7 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
           </div>
         )}
 
-        <Btn label="Próxima →" onClick={() => selected && navigate('q5')} variant={selected ? 'primary' : 'ghost'} />
+        <Btn label="Próxima →" onClick={() => answers.rapidWorsening && navigate('q5')} variant={answers.rapidWorsening ? 'primary' : 'ghost'} />
       </Content>
     </ScreenWrap>
   )
@@ -337,19 +346,19 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
 
 // ─── 3e. Grupo Vulnerável ─────────────────────────────────────────────────────
 
-export function Q5Screen({ navigate }: { navigate: Navigate }) {
-  const [groups, setGroups] = useState<Record<string, boolean>>({})
-  const toggle = (g: string) => setGroups(prev => ({ ...prev, [g]: !prev[g] }))
+const GROUPS = [
+  'Criança (menor de 5 anos)',
+  'Idoso (60 anos ou mais)',
+  'Gestante',
+  'Puérpera (até 45 dias após parto)',
+  'Imunossuprimido / transplantado',
+  'Portador de doença crônica (diabetes, HAS, cardiopatia, DPOC...)',
+  'Nenhuma das anteriores',
+]
+const NONE_LABEL = 'Nenhuma das anteriores'
 
-  const GROUPS = [
-    'Criança (menor de 5 anos)',
-    'Idoso (60 anos ou mais)',
-    'Gestante',
-    'Puérpera (até 45 dias após parto)',
-    'Imunossuprimido / transplantado',
-    'Portador de doença crônica (diabetes, HAS, cardiopatia, DPOC...)',
-    'Nenhuma das anteriores',
-  ]
+export function Q5Screen({ navigate }: { navigate: Navigate }) {
+  const { answers, toggleVulnerableGroup } = useTriage()
 
   return (
     <ScreenWrap>
@@ -364,8 +373,8 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         {GROUPS.map(g => (
-          <div key={g} onClick={() => toggle(g)} style={{ cursor: 'pointer', marginBottom: 6 }}>
-            <CheckboxItem label={g} checked={!!groups[g]} />
+          <div key={g} onClick={() => toggleVulnerableGroup(g, NONE_LABEL)} style={{ cursor: 'pointer', marginBottom: 6 }}>
+            <CheckboxItem label={g} checked={answers.vulnerableGroups.includes(g)} />
           </div>
         ))}
 
@@ -391,7 +400,8 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
 // ─── 3f. Medicamentos ─────────────────────────────────────────────────────────
 
 export function Q6Screen({ navigate }: { navigate: Navigate }) {
-  const [using, setUsing] = useState<YesNo>(null)
+  const { answers, updateAnswers } = useTriage()
+
   return (
     <ScreenWrap>
       <NavBar title="Triagem" onBack={() => navigate('q5')} />
@@ -407,13 +417,18 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-          <OptionItem label="Sim" selected={using === 'sim'} onClick={() => setUsing('sim')} />
-          <OptionItem label="Não" selected={using === 'nao'} onClick={() => setUsing('nao')} />
+          <OptionItem label="Sim" selected={answers.usingMedication === 'sim'} onClick={() => updateAnswers({ usingMedication: 'sim' })} />
+          <OptionItem label="Não" selected={answers.usingMedication === 'nao'} onClick={() => updateAnswers({ usingMedication: 'nao' })} />
         </div>
 
-        {using === 'sim' && (
+        {answers.usingMedication === 'sim' && (
           <div style={{ marginBottom: 16 }}>
-            <Field label="Quais medicamentos? (opcional)" placeholder="Ex: Losartana 50mg, Paracetamol..." />
+            <Field
+              label="Quais medicamentos? (opcional)"
+              placeholder="Ex: Losartana 50mg, Paracetamol..."
+              value={answers.medicationDetails}
+              onChange={(v) => updateAnswers({ medicationDetails: v })}
+            />
             <div style={{
               border: '1.5px dashed #7C93A6', borderRadius: 6, padding: '8px 10px',
               backgroundColor: '#EFF5F9', marginBottom: 8,
@@ -439,8 +454,8 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
 
         <Btn
           label="Ver Resultado da Triagem →"
-          onClick={() => using && navigate('result')}
-          variant={using ? 'primary' : 'ghost'}
+          onClick={() => answers.usingMedication && navigate('result')}
+          variant={answers.usingMedication ? 'primary' : 'ghost'}
         />
       </Content>
     </ScreenWrap>

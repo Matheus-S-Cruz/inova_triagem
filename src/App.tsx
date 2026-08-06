@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MobilePage } from './components/Wire'
+import { TriageProvider } from './context/TriageContext'
 import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1'
 import { ResultScreen, HomeCareScreen } from './screens/Flow2'
 import { MapScreen, UnitListScreen, UnitDetailScreen } from './screens/Flow3'
@@ -227,7 +228,12 @@ export default function App() {
         </div>
 
         <MobilePage>
-          <ScreenRouter screen={screen} navigate={navigate} />
+          {/* TriageProvider guarda as respostas de Q1–Q6 em um só lugar, para
+              que o algoritmo de classificação em src/lib/triage.ts calcule o
+              resultado real (em vez do antigo nível fixo "UPA") */}
+          <TriageProvider>
+            <ScreenRouter screen={screen} navigate={navigate} />
+          </TriageProvider>
         </MobilePage>
 
         {/* Quick-jump arrows */}
