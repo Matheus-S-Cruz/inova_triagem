@@ -82,7 +82,7 @@ https://docs.google.com/document/d/1BabsWYQ50o-oPhnh65cSyjRL-ClzTqr3JhTenDTBp30/
 - Matheus Cruz
 - Nicolas André
 - Nicolas Pimentel
-- Pedro Pires
+  
 
 ---
 ## Licença
