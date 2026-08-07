@@ -8,10 +8,12 @@
 import type { RiskLevel, TriageAnswers } from './triage'
 
 export interface Usuario {
+  id: string
   nomeCompleto: string
   dataNascimento: string // DD/MM/AAAA
   telefone: string
   email: string
+  senha: string
   sexoBiologico: string // 'Feminino' | 'Masculino' | 'Outro' | ''
   cidadeBairro: string
   possuiPlano: string // 'Sim' | 'Não' | ''
@@ -26,10 +28,12 @@ export interface Usuario {
 
 export function emptyUsuario(): Usuario {
   return {
+    id: '',
     nomeCompleto: '',
     dataNascimento: '',
     telefone: '',
     email: '',
+    senha: '',
     sexoBiologico: '',
     cidadeBairro: '',
     possuiPlano: '',
@@ -43,22 +47,81 @@ export function emptyUsuario(): Usuario {
   }
 }
 
-const STORAGE_KEY = 'triagem_app_usuario'
+function generateUserId(): string {
+  return `u_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+}
+
+
+const USERS_KEY = 'triagem_app_usuarios' // lista de todas as contas cadastradas
 const GUEST_KEY = 'triagem_app_convidado'
+const SESSION_KEY = 'triagem_app_sessao'
+
+function getAllUsers(): Usuario[] {
+  if (typeof window === 'undefined') return []
+  const raw = window.localStorage.getItem(USERS_KEY)
+  return raw ? (JSON.parse(raw) as Usuario[]) : []
+}
+
+function saveAllUsers(users: Usuario[]) {
+  window.localStorage.setItem(USERS_KEY, JSON.stringify(users))
+}
+
 
 export const UserStorage = {
+  /** Retorna a conta atualmente logada nesta aba (ou null). */
   get(): Usuario | null {
     if (typeof window === 'undefined') return null
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Usuario) : null
+    const sessionId = window.localStorage.getItem(SESSION_KEY)
+    if (!sessionId) return null
+    return getAllUsers().find((u) => u.id === sessionId) ?? null
   },
+  /** Cria ou atualiza uma conta na lista e já loga com ela. */
   save(data: Usuario) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    const withId = data.id ? data : { ...data, id: generateUserId() }
+    const users = getAllUsers()
+    const idx = users.findIndex((u) => u.id === withId.id)
+    if (idx >= 0) {
+      users[idx] = withId
+    } else {
+      users.push(withId)
+    }
+    saveAllUsers(users)
     window.localStorage.removeItem(GUEST_KEY)
+    window.localStorage.setItem(SESSION_KEY, withId.id) // cadastrar já loga com essa conta
   },
-  clear() {
-    window.localStorage.removeItem(STORAGE_KEY)
-    window.localStorage.removeItem(GUEST_KEY)
+  /** Apaga só a conta logada e todos os dados dela — não afeta outras contas. */
+  deleteAccount() {
+    const account = UserStorage.get()
+    if (!account) return
+    const users = getAllUsers().filter((u) => u.id !== account.id)
+    saveAllUsers(users)
+    window.localStorage.removeItem(SESSION_KEY)
+    HistoryStorage.clear(account.id)
+  },
+  /** Login real: confere e-mail/telefone + senha contra a conta salva. */
+  login(identifier: string, senha: string): Usuario | null {
+   
+    
+    const idClean = identifier.trim().toLowerCase()
+    const idDigits = identifier.replace(/\D/g, '')
+    const account = getAllUsers().find((account) =>
+      (!!account.email && account.email.toLowerCase() === idClean) ||
+      (!!account.telefone && !!idDigits && account.telefone.replace(/\D/g, '') === idDigits)
+    )
+    if (account && account.senha === senha) {
+      window.localStorage.setItem(SESSION_KEY, account.id)
+      return account
+    }
+    return null
+  },
+  /** Só encerra a sessão — a conta continua salva pra próximo login. */
+  logout() {
+    window.localStorage.removeItem(SESSION_KEY)
+  },
+  /** Existe sessão ativa? (usuário logado agora, na aba atual) */
+  isLoggedIn(): boolean {
+    if (typeof window === 'undefined') return false
+    return !!window.localStorage.getItem(SESSION_KEY)
   },
   setGuest() {
     window.localStorage.setItem(GUEST_KEY, '1')
@@ -114,15 +177,19 @@ export interface TriageHistoryEntry {
 }
 
 const HISTORY_KEY = 'triagem_app_historico'
+function historyKey(userId: string) {
+   return `${HISTORY_KEY}_${userId}`
+ }
 
 export const HistoryStorage = {
-  getAll(): TriageHistoryEntry[] {
-    if (typeof window === 'undefined') return []
-    const raw = window.localStorage.getItem(HISTORY_KEY)
+    getAll(userId: string): TriageHistoryEntry[] {
+    if (typeof window === 'undefined' || !userId) return []
+    const raw = window.localStorage.getItem(historyKey(userId))
     return raw ? (JSON.parse(raw) as TriageHistoryEntry[]) : []
   },
-  add(entry: TriageHistoryEntry) {
-    const all = HistoryStorage.getAll()
+  add(entry: TriageHistoryEntry, userId: string) {
+    if (!userId) return
+    const all = HistoryStorage.getAll(userId)
     // Evita duplicata: mesma classificação + mesmas respostas registradas
    // nos últimos 5 segundos é considerada a mesma triagem.
    const isDuplicate = all[0]
@@ -131,9 +198,10 @@ export const HistoryStorage = {
      && Date.now() - Number(all[0].id) < 5000
    if (isDuplicate) return
     all.unshift(entry) // mais recente primeiro
-    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(all))
+    window.localStorage.setItem(historyKey(userId), JSON.stringify(all))
   },
-  clear() {
-    window.localStorage.removeItem(HISTORY_KEY)
+  clear(userId: string) {
+    if (!userId) return
+    window.localStorage.removeItem(historyKey(userId))
   },
 }

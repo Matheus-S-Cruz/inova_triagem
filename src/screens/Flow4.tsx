@@ -21,6 +21,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
   const [form, setForm] = useState<Usuario>(emptyUsuario())
   const [nomeError, setNomeError] = useState('')
   const [telefoneError, setTelefoneError] = useState('')
+  const [senhaError, setSenhaError] = useState('')
   const [termosError, setTermosError] = useState(false)
 
   const update = (key: keyof Usuario) => (value: string) =>
@@ -44,6 +45,12 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
       ok = false
     } else {
       setTelefoneError('')
+    }
+    if (!form.senha.trim() || form.senha.length < 4) {
+      setSenhaError('Crie uma senha com pelo menos 4 caracteres')
+      ok = false
+    } else {
+      setSenhaError('')
     }
     return ok
   }
@@ -146,6 +153,10 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
           error={telefoneError}
         />
         <Field
+           label="Senha" placeholder="Mínimo 4 caracteres" required
+           value={form.senha} onChange={update('senha')} error={senhaError}
+         />
+        <Field
           label="E-mail" placeholder="nome@email.com" hint="Opcional" type="email"
           value={form.email} onChange={update('email')}
         />
@@ -210,7 +221,9 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
 // ─── 10. Perfil do Usuário ────────────────────────────────────────────────────
 
 export function ProfileScreen({ navigate }: { navigate: Navigate }) {
-  const [saved, setSaved] = useState<Usuario | null>(() => UserStorage.get())
+  const [saved, setSaved] = useState<Usuario | null>(() =>
+    UserStorage.isLoggedIn() ? UserStorage.get() : null
+)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Usuario | null>(saved)
   const [justSaved, setJustSaved] = useState(false)
@@ -234,7 +247,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   }
 
   const handleLogout = () => {
-    UserStorage.clear()
+    UserStorage.logout()
     navigate('home')
   }
 
@@ -409,13 +422,16 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
 const RISK_COLORS: Record<string, string> = {
   Emergência: '#dc2626', UPA: '#ea580c', Prioritário: '#ca8a04',
-  UBS: '#16a34a', 'Em casa': '#2563eb',
+  UBS: '#16a34a',
 }
 
 const MONTH_ABBR = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ']
 
 export function HistoryScreen({ navigate }: { navigate: Navigate }) {
-  const [items] = useState<TriageHistoryEntry[]>(() => HistoryStorage.getAll())
+  const account = UserStorage.get()
+  const [items] = useState<TriageHistoryEntry[]>(() =>
+    account ? HistoryStorage.getAll(account.id) : []
+  )
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const { resetAnswers } = useTriage()
 
@@ -582,5 +598,37 @@ function HistoryDetail({ item, onBack, navigate }: {
         <Btn label="Ver unidades próximas" onClick={() => navigate('unitlist')} variant="secondary" />
       </div>
     </>
+  )
+}
+export function LoginScreen({ navigate }: { navigate: Navigate }) {
+  const [identifier, setIdentifier] = useState('')
+  const [senha, setSenha] = useState('')
+  const [error, setError] = useState('')
+
+  const handleLogin = () => {
+    const account = UserStorage.login(identifier, senha)
+    if (account) {
+      setError('')
+      navigate('profile')
+    } else {
+      setError('E-mail/telefone ou senha incorretos.')
+    }
+  }
+
+  return (
+    <ScreenWrap>
+      <NavBar title="Entrar" onBack={() => navigate('home')} />
+      <Content>
+        <Field label="E-mail ou telefone" placeholder="seu@email.com" value={identifier} onChange={setIdentifier} />
+        <Field label="Senha" placeholder="••••••••" value={senha} onChange={setSenha} />
+        {error && (
+          <div style={{ fontSize: 11, color: '#DC2626', marginBottom: 12 }}>⚠ {error}</div>
+        )}
+        <Btn label="Entrar" onClick={handleLogin} variant="primary" />
+        <div style={{ marginTop: 8 }}>
+          <Btn label="Ainda não tenho conta" onClick={() => navigate('register')} variant="ghost" />
+        </div>
+      </Content>
+    </ScreenWrap>
   )
 }

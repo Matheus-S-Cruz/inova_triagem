@@ -55,15 +55,7 @@ const RECOMMENDATIONS: Record<RiskLevel, {
     secondary: 'Iniciar teleconsulta',
     secondaryTarget: 'unitlist',
   },
-  blue: {
-    level: 'blue',
-    heading: 'Cuidados em casa',
-    body: 'Seus sintomas podem ser manejados em casa com repouso e hidratação. Siga as orientações de autocuidado.',
-    cta: 'Ver orientações',
-    ctaTarget: 'homecare',
-    secondary: 'Buscar unidade se piorar',
-    secondaryTarget: 'unitlist',
-  },
+  
 }
 
 // Rótulo curto usado no histórico (telas de Perfil/Histórico, Flow4.tsx)
@@ -72,7 +64,7 @@ const LEVEL_CLASSIFICATION: Record<RiskLevel, string> = {
   orange: 'UPA',
   yellow: 'Prioritário',
   green: 'UBS',
-  blue: 'Em casa',
+ 
 }
 
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
@@ -98,7 +90,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
         classification: LEVEL_CLASSIFICATION[result.level],
         reasons: result.reasons,
         answers,
-      })
+      }, account.id)
       markHistorySaved()
     }
   }, [])

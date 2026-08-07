@@ -58,7 +58,7 @@ export function isTriageComplete(a: TriageAnswers): boolean {
   )
 }
 
-export type RiskLevel = 'red' | 'orange' | 'yellow' | 'green' | 'blue'
+export type RiskLevel = 'red' | 'orange' | 'yellow' | 'green'
 
 export interface TriageResult {
   level: RiskLevel
@@ -158,7 +158,8 @@ export function classifyRisk(a: TriageAnswers): TriageResult {
     return { level: 'green', reasons }
   }
 
-  // ── AZUL — Orientação: cuidados em casa ─────────────────────────────────
-  reasons.push('Sintomas leves, de início recente e sem sinais de alarme — cuidados em casa com monitoramento.')
-  return { level: 'blue', reasons }
+   // ── VERDE — UBS: fallback final. Sem nível "cuidados em casa": todo
+   // paciente é sempre direcionado a UBS, UPA ou Hospital.
+   reasons.push('Sintomas leves, de início recente e sem sinais de alarme — recomenda-se avaliação em UBS.')
+   return { level: 'green', reasons }
 }

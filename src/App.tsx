@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { MobilePage } from './components/Wire'
 import { TriageProvider } from './context/TriageContext'
-import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1'
-import { ResultScreen, HomeCareScreen } from './screens/Flow2'
+import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1' 
+import { ResultScreen } from './screens/Flow2'
 import { MapScreen, UnitListScreen, UnitDetailScreen } from './screens/Flow3'
-import { RegisterScreen, ProfileScreen, HistoryScreen } from './screens/Flow4'
+import { RegisterScreen, LoginScreen, ProfileScreen, HistoryScreen } from './screens/Flow4'
 import { TeamLoginScreen, OccupancyScreen, AdminScreen } from './screens/Flow5'
 
 export type ScreenId =
   | 'home' | 'lgpd' | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6'
-  | 'result' | 'homecare'
+  | 'result' 
   | 'map' | 'unitlist' | 'unitdetail'
-  | 'register' | 'profile' | 'history'
+  | 'register' | 'login' | 'profile' | 'history'
   | 'teamlogin' | 'occupancy' | 'admin'
 
 export type Navigate = (to: ScreenId) => void
@@ -34,7 +34,7 @@ const FLOWS = [
     label: 'Fluxo 2 — Resultado',
     screens: [
       { id: 'result', label: '4. Classificação de Risco' },
-      { id: 'homecare', label: '5. Cuidados em Casa' },
+      
     ],
   },
   {
@@ -49,6 +49,7 @@ const FLOWS = [
     label: 'Fluxo 4 — Perfil e Histórico',
     screens: [
       { id: 'register', label: '9. Cadastro' },
+      { id: 'login', label: '9b. Entrar' },
       { id: 'profile', label: '10. Perfil do Usuário' },
       { id: 'history', label: '11. Histórico de Triagens' },
     ],
@@ -74,11 +75,12 @@ function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Naviga
     case 'q5': return <Q5Screen navigate={navigate} />
     case 'q6': return <Q6Screen navigate={navigate} />
     case 'result': return <ResultScreen navigate={navigate} />
-    case 'homecare': return <HomeCareScreen navigate={navigate} />
+    
     case 'map': return <MapScreen navigate={navigate} />
     case 'unitlist': return <UnitListScreen navigate={navigate} />
     case 'unitdetail': return <UnitDetailScreen navigate={navigate} />
     case 'register': return <RegisterScreen navigate={navigate} />
+    case 'login': return <LoginScreen navigate={navigate} />
     case 'profile': return <ProfileScreen navigate={navigate} />
     case 'history': return <HistoryScreen navigate={navigate} />
     case 'teamlogin': return <TeamLoginScreen navigate={navigate} />

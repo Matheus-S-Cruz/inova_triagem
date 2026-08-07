@@ -13,7 +13,7 @@ import { useTriage } from '../context/TriageContext'
 export function HomeScreen({ navigate }: { navigate: Navigate }) {
   // Mesma checagem que existia no init() da branch FrontEnd: se já há uma
   // conta salva, o atalho leva direto ao Perfil em vez de abrir o Cadastro.
-  const hasAccount = !!UserStorage.get()
+  const hasAccount = UserStorage.isLoggedIn()
   const { resetAnswers } = useTriage()
 
   const startTriage = () => {
@@ -60,7 +60,8 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
              <Btn label="Meu Perfil" onClick={() => navigate('profile')} variant="secondary" />
            ) : (
              <>
-               <Btn label="Entrar" onClick={() => navigate('profile')} variant="secondary" />
+               
+               <Btn label="Entrar" onClick={() => navigate('login')} variant="secondary" />
                <Btn label="Criar Conta" onClick={() => navigate('register')} variant="ghost" />
              </>
            )}

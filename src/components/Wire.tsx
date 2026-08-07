@@ -227,7 +227,7 @@ const RISK_CONFIG: Record<RiskLevel, { bg: string; text: string; label: string; 
   orange: { bg: '#ea580c', text: '#fff', label: 'UPA', subtitle: 'Atendimento urgente' },
   yellow: { bg: '#ca8a04', text: '#fff', label: 'PRIORITÁRIO', subtitle: 'Atendimento em até 2h' },
   green: { bg: '#16a34a', text: '#fff', label: 'UBS', subtitle: 'Atendimento sem urgência' },
-  blue: { bg: '#2563eb', text: '#fff', label: 'ORIENTAÇÃO', subtitle: 'Cuidados em casa' },
+  
 }
 
 export function RiskBadge({ level }: { level: RiskLevel }) {
