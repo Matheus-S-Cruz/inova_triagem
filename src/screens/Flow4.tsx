@@ -10,6 +10,7 @@ import {
   type Usuario, type TriageHistoryEntry,
 } from '../lib/storage'
 import { useTriage } from '../context/TriageContext'
+import { formatDateInput, formatPhoneInput } from '../lib/format'
 
 // ─── 9. Cadastro ──────────────────────────────────────────────────────────────
 // Portado da branch FrontEnd (index.html standalone): fluxo em 2 etapas
@@ -58,7 +59,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
     }
     setTermosError(false)
     UserStorage.save({ ...form, contaCriadaEm: new Date().toISOString() })
-    navigate('profile')
+    navigate('lgpd')
   }
 
   if (step === 2) {
@@ -94,6 +95,17 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
               ⚠ É preciso aceitar os termos para continuar
             </div>
           )}
+          
+         <div
+           onClick={() => setForm(prev => ({ ...prev, receberNotificacoes: !prev.receberNotificacoes }))}
+           style={{ cursor: 'pointer', marginTop: 8 }}
+         >
+           <CheckboxItem
+             label="Desejo receber notificações do Triagem+ (ex: status da fila, lembretes)"
+             checked={form.receberNotificacoes}
+             note="Opcional"
+           />
+         </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
             <Btn label="Criar conta" onClick={handleCriarConta} variant="primary" />
@@ -124,11 +136,14 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
         />
         <Field
           label="Data de nascimento" placeholder="DD/MM/AAAA"
-          value={form.dataNascimento} onChange={update('dataNascimento')}
+          value={form.dataNascimento}
+          onChange={(v) => update('dataNascimento')(formatDateInput(v))}
         />
         <Field
-          label="Telefone" placeholder="(11) 9 0000-0000" hint="Para receber confirmações" required type="tel"
-          value={form.telefone} onChange={update('telefone')} error={telefoneError}
+          label="Telefone" placeholder="(11) 90000-0000" hint="Para receber confirmações" required type="tel"
+          value={form.telefone}
+          onChange={(v) => update('telefone')(formatPhoneInput(v))}
+          error={telefoneError}
         />
         <Field
           label="E-mail" placeholder="nome@email.com" hint="Opcional" type="email"
@@ -225,7 +240,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
   const startNewTriage = () => {
     resetAnswers()
-    navigate('lgpd')
+    navigate('q1')
   }
 
   // Sem conta salva (uso anônimo) — convida a criar conta.
@@ -295,8 +310,16 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         {editing && form ? (
           <>
             <Field label="Nome completo" value={form.nomeCompleto} onChange={update('nomeCompleto')} />
-            <Field label="Data de nascimento" placeholder="DD/MM/AAAA" value={form.dataNascimento} onChange={update('dataNascimento')} />
-            <Field label="Telefone" type="tel" value={form.telefone} onChange={update('telefone')} />
+           <Field
+             label="Data de nascimento" placeholder="DD/MM/AAAA"
+             value={form.dataNascimento}
+             onChange={(v) => update('dataNascimento')(formatDateInput(v))}
+           />
+           <Field
+             label="Telefone" type="tel" placeholder="(11) 90000-0000"
+             value={form.telefone}
+             onChange={(v) => update('telefone')(formatPhoneInput(v))}
+           />
             <Field label="E-mail" type="email" value={form.email} onChange={update('email')} />
             <Field label="Cidade / Bairro" value={form.cidadeBairro} onChange={update('cidadeBairro')} />
           </>
@@ -398,7 +421,7 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
 
   const startNewTriage = () => {
     resetAnswers()
-    navigate('lgpd')
+    navigate('q1')
   }
 
   const selectedItem = items.find(h => h.id === selectedId) ?? null
@@ -487,7 +510,7 @@ function HistoryDetail({ item, onBack, navigate }: {
 
   const redoTriage = () => {
     resetAnswers()
-    navigate('lgpd')
+    navigate('q1')
   }
 
   const yesNoLabel = (v: 'sim' | 'nao' | null) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : '—')

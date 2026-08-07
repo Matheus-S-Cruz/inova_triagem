@@ -20,6 +20,7 @@ export interface Usuario {
   comorbidades: string
   medicamentos: string
   termosAceitos: boolean
+  receberNotificacoes: boolean
   contaCriadaEm: string // ISO
 }
 
@@ -37,6 +38,7 @@ export function emptyUsuario(): Usuario {
     comorbidades: '',
     medicamentos: '',
     termosAceitos: false,
+    receberNotificacoes: false,
     contaCriadaEm: '',
   }
 }
@@ -121,6 +123,13 @@ export const HistoryStorage = {
   },
   add(entry: TriageHistoryEntry) {
     const all = HistoryStorage.getAll()
+    // Evita duplicata: mesma classificação + mesmas respostas registradas
+   // nos últimos 5 segundos é considerada a mesma triagem.
+   const isDuplicate = all[0]
+     && all[0].level === entry.level
+     && JSON.stringify(all[0].answers) === JSON.stringify(entry.answers)
+     && Date.now() - Number(all[0].id) < 5000
+   if (isDuplicate) return
     all.unshift(entry) // mais recente primeiro
     window.localStorage.setItem(HISTORY_KEY, JSON.stringify(all))
   },

@@ -18,7 +18,7 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
 
   const startTriage = () => {
     resetAnswers() // começa uma nova triagem do zero
-    navigate('lgpd')
+    navigate(hasAccount ? 'q1' : 'lgpd')
   }
 
   return (
@@ -56,11 +56,14 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
           {/* CTA buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
             <Btn label="✚  Iniciar Triagem" onClick={startTriage} variant="primary" />
-            <Btn
-              label={hasAccount ? 'Meu Perfil' : 'Entrar / Criar Conta'}
-              onClick={() => navigate(hasAccount ? 'profile' : 'register')}
-              variant="secondary"
-            />
+           {hasAccount ? (
+             <Btn label="Meu Perfil" onClick={() => navigate('profile')} variant="secondary" />
+           ) : (
+             <>
+               <Btn label="Entrar" onClick={() => navigate('profile')} variant="secondary" />
+               <Btn label="Criar Conta" onClick={() => navigate('register')} variant="ghost" />
+             </>
+           )}
           </div>
 
           <Divider />
@@ -102,6 +105,8 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
 
 export function LGPDScreen({ navigate }: { navigate: Navigate }) {
   const [agreed, setAgreed] = useState(false)
+  const hasAccount = !!UserStorage.get()
+  
   return (
     <ScreenWrap>
       <NavBar title="Privacidade e Dados" onBack={() => navigate('home')} />
@@ -143,17 +148,13 @@ export function LGPDScreen({ navigate }: { navigate: Navigate }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 12 }}>
-          <CheckboxItem label="Desejo receber informações de saúde da Secretaria Municipal (opcional)" />
-        </div>
-
         <div style={{ fontSize: 11, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif', marginBottom: 16 }}>
           Ao continuar, você também concorda com os Termos de Uso.
         </div>
 
         <Btn
           label="Continuar"
-          onClick={() => agreed && navigate('q1')}
+          onClick={() => agreed && navigate(hasAccount ? 'profile' : 'q1')}
           variant={agreed ? 'primary' : 'ghost'}
         />
 
@@ -176,11 +177,12 @@ const SYMPTOMS = [
 
 export function Q1Screen({ navigate }: { navigate: Navigate }) {
   const { answers, updateAnswers } = useTriage()
+  const hasAccount = !!UserStorage.get()
   const canProceed = !!answers.symptom || !!answers.symptomOther.trim()
 
   return (
     <ScreenWrap>
-      <NavBar title="Triagem" onBack={() => navigate('lgpd')} />
+      <NavBar title="Triagem" onBack={() => navigate(hasAccount ? 'home' : 'lgpd')} />
       <ProgressBar current={1} total={6} />
       <Content>
         <div style={{ marginBottom: 16 }}>
@@ -401,6 +403,9 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
 
 export function Q6Screen({ navigate }: { navigate: Navigate }) {
   const { answers, updateAnswers } = useTriage()
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const yesNoLabel = (v: 'sim' | 'nao' | null) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : '—')
 
   return (
     <ScreenWrap>
@@ -454,10 +459,69 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
 
         <Btn
           label="Ver Resultado da Triagem →"
-          onClick={() => answers.usingMedication && navigate('result')}
+          onClick={() => answers.usingMedication && setShowConfirm(true)}
           variant={answers.usingMedication ? 'primary' : 'ghost'}
         />
       </Content>
+      +      {showConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirme suas respostas"
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 42, 74, 0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20, zIndex: 50,
+          }}
+        >
+          <div style={{
+            backgroundColor: '#fff', borderRadius: 12, padding: '18px 18px 16px',
+            width: '100%', maxWidth: 360, maxHeight: '85vh', overflowY: 'auto',
+            boxShadow: '0 20px 40px rgba(15,42,74,0.3)',
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#0F2A4A', marginBottom: 4 }}>
+              Confira suas respostas
+            </div>
+            <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 14 }}>
+              Revise antes de ver o resultado da triagem
+            </div>
+
+            <div style={{
+              backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3',
+              borderRadius: 8, padding: '10px 12px', marginBottom: 16,
+            }}>
+              {[
+                { label: 'Sintoma', value: answers.symptom || answers.symptomOther || '—' },
+                { label: 'Duração', value: answers.duration || '—' },
+                { label: 'Febre', value: yesNoLabel(answers.fever) },
+                { label: 'Dor intensa', value: yesNoLabel(answers.intensePain) },
+                { label: 'Falta de ar', value: yesNoLabel(answers.breathingDifficulty) },
+                { label: 'Piora rápida', value: yesNoLabel(answers.rapidWorsening) },
+                { label: 'Grupo de risco', value: answers.vulnerableGroups.length ? answers.vulnerableGroups.join(', ') : 'Nenhum' },
+                {
+                  label: 'Medicamentos',
+                  value: answers.usingMedication === 'sim'
+                    ? (answers.medicationDetails || 'Sim (não especificado)')
+                    : yesNoLabel(answers.usingMedication),
+                },
+              ].map(({ label, value }, i, arr) => (
+                <div key={label} style={{
+                  display: 'flex', justifyContent: 'space-between', gap: 12,
+                  padding: '6px 0', borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none',
+                }}>
+                  <span style={{ fontSize: 11.5, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: 12.5, color: '#16324F', fontWeight: 600, textAlign: 'right' }}>{value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Btn label="Confirmar e ver resultado" onClick={() => navigate('result')} variant="primary" />
+              <Btn label="Voltar e revisar respostas" onClick={() => setShowConfirm(false)} variant="ghost" />
+            </div>
+          </div>
+        </div>
+      )}
     </ScreenWrap>
   )
 }

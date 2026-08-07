@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Navigate } from '../App'
 import {
   NavBar, Btn, RiskBadge, Divider, SectionTitle,
@@ -78,13 +78,18 @@ const LEVEL_CLASSIFICATION: Record<RiskLevel, string> = {
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
   const { answers, result, resetAnswers, historySaved, markHistorySaved } = useTriage()
   const rec = RECOMMENDATIONS[result.level]
+  // Guard extra via ref: ao contrário do estado do Context, uma ref é
+  // atualizada de forma síncrona e sobrevive à dupla-invocação de efeitos
+  // do React.StrictMode (dev), evitando duplicar o registro no histórico.
+  const alreadySavedRef = useRef(false)
 
   // Se o usuário tem conta salva (ou seja, se cadastrou — não é uso anônimo),
   // registra esta triagem no histórico assim que o resultado é exibido.
   // `historySaved` garante que isso rode uma única vez por triagem.
   useEffect(() => {
     const account = UserStorage.get()
-    if (account && !historySaved) {
+    if (account && !historySaved && !alreadySavedRef.current) {
+      alreadySavedRef.current = true
       HistoryStorage.add({
         id: `${Date.now()}`,
         date: formatTodayDate(),

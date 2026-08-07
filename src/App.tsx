@@ -89,7 +89,7 @@ function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Naviga
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<ScreenId>('register') // ← era 'home'
+  const [screen, setScreen] = useState<ScreenId>('home') // ← era 'home'
   const [navOpen, setNavOpen] = useState(false)
   const [navCollapsed, setNavCollapsed] = useState(false)
   // ...restante do arquivo sem alterações
