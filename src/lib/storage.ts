@@ -5,6 +5,8 @@
 // chamadas à API (ver backend/README.md) seja só trocar esta camada, sem
 // mexer nas telas.
 
+import type { RiskLevel, TriageAnswers } from './triage'
+
 export interface Usuario {
   nomeCompleto: string
   dataNascimento: string // DD/MM/AAAA
@@ -85,4 +87,44 @@ export function formatMonthYear(iso: string): string {
   if (Number.isNaN(d.getTime())) return '—'
   const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
   return `${meses[d.getMonth()]}/${d.getFullYear()}`
+}
+
+/** Formata a data de hoje como DD/MM/AAAA. */
+export function formatTodayDate(): string {
+  const d = new Date()
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dd}/${mm}/${d.getFullYear()}`
+}
+
+// ─── Histórico de triagens ──────────────────────────────────────────────────
+// Só é gravado quando o usuário tem conta (ver ResultScreen, em Flow2.tsx).
+// Uso anônimo/convidado nunca grava nada aqui.
+
+export interface TriageHistoryEntry {
+  id: string
+  date: string // DD/MM/AAAA
+  symptom: string
+  level: RiskLevel
+  classification: string // rótulo curto exibido na lista (ex: "UBS", "UPA")
+  reasons: string[]
+  answers: TriageAnswers
+}
+
+const HISTORY_KEY = 'triagem_app_historico'
+
+export const HistoryStorage = {
+  getAll(): TriageHistoryEntry[] {
+    if (typeof window === 'undefined') return []
+    const raw = window.localStorage.getItem(HISTORY_KEY)
+    return raw ? (JSON.parse(raw) as TriageHistoryEntry[]) : []
+  },
+  add(entry: TriageHistoryEntry) {
+    const all = HistoryStorage.getAll()
+    all.unshift(entry) // mais recente primeiro
+    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(all))
+  },
+  clear() {
+    window.localStorage.removeItem(HISTORY_KEY)
+  },
 }

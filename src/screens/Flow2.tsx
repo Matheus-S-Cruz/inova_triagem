@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { Navigate } from '../App'
 import {
   NavBar, Btn, RiskBadge, Divider, SectionTitle,
@@ -5,6 +6,7 @@ import {
 } from '../components/Wire'
 import { useTriage } from '../context/TriageContext'
 import type { RiskLevel } from '../lib/triage'
+import { UserStorage, HistoryStorage, formatTodayDate } from '../lib/storage'
 
 // ─── 4. Resultado da Classificação ────────────────────────────────────────────
 
@@ -64,9 +66,37 @@ const RECOMMENDATIONS: Record<RiskLevel, {
   },
 }
 
+// Rótulo curto usado no histórico (telas de Perfil/Histórico, Flow4.tsx)
+const LEVEL_CLASSIFICATION: Record<RiskLevel, string> = {
+  red: 'Emergência',
+  orange: 'UPA',
+  yellow: 'Prioritário',
+  green: 'UBS',
+  blue: 'Em casa',
+}
+
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
-  const { answers, result, resetAnswers } = useTriage()
+  const { answers, result, resetAnswers, historySaved, markHistorySaved } = useTriage()
   const rec = RECOMMENDATIONS[result.level]
+
+  // Se o usuário tem conta salva (ou seja, se cadastrou — não é uso anônimo),
+  // registra esta triagem no histórico assim que o resultado é exibido.
+  // `historySaved` garante que isso rode uma única vez por triagem.
+  useEffect(() => {
+    const account = UserStorage.get()
+    if (account && !historySaved) {
+      HistoryStorage.add({
+        id: `${Date.now()}`,
+        date: formatTodayDate(),
+        symptom: answers.symptom || answers.symptomOther || 'Sintoma não especificado',
+        level: result.level,
+        classification: LEVEL_CLASSIFICATION[result.level],
+        reasons: result.reasons,
+        answers,
+      })
+      markHistorySaved()
+    }
+  }, [])
 
   const startNewTriage = () => {
     resetAnswers()

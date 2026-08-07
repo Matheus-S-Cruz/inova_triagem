@@ -5,7 +5,10 @@ import {
   SectionTitle, BodyText, Divider, A11yNote,
   ScreenWrap, Content, ListRow,
 } from '../components/Wire'
-import { UserStorage, emptyUsuario, calcAge, formatMonthYear, type Usuario } from '../lib/storage'
+import {
+  UserStorage, HistoryStorage, emptyUsuario, calcAge, formatMonthYear,
+  type Usuario, type TriageHistoryEntry,
+} from '../lib/storage'
 import { useTriage } from '../context/TriageContext'
 
 // ─── 9. Cadastro ──────────────────────────────────────────────────────────────
@@ -376,21 +379,21 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 }
 
 // ─── 11. Histórico de Triagens ────────────────────────────────────────────────
+// Antes usava uma lista fixa de exemplo (HISTORY_ITEMS). Agora lê o
+// histórico real gravado pelo ResultScreen (Flow2.tsx) via HistoryStorage —
+// só existe registro aqui quando a triagem foi concluída com uma conta
+// criada. Uso anônimo continua funcionando normalmente, só não fica salvo.
 
 const RISK_COLORS: Record<string, string> = {
   Emergência: '#dc2626', UPA: '#ea580c', Prioritário: '#ca8a04',
   UBS: '#16a34a', 'Em casa': '#2563eb',
 }
 
-const HISTORY_ITEMS = [
-  { id: 1, date: '07/07/2025', symptom: 'Febre e dor de cabeça', classification: 'UBS', level: 'green' as const },
-  { id: 2, date: '21/05/2025', symptom: 'Falta de ar', classification: 'UPA', level: 'orange' as const },
-  { id: 3, date: '03/03/2025', symptom: 'Dor abdominal', classification: 'Prioritário', level: 'yellow' as const },
-  { id: 4, date: '15/01/2025', symptom: 'Tosse e coriza', classification: 'Em casa', level: 'blue' as const },
-]
+const MONTH_ABBR = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ']
 
 export function HistoryScreen({ navigate }: { navigate: Navigate }) {
-  const [selected, setSelected] = useState<number | null>(null)
+  const [items] = useState<TriageHistoryEntry[]>(() => HistoryStorage.getAll())
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const { resetAnswers } = useTriage()
 
   const startNewTriage = () => {
@@ -398,22 +401,34 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
     navigate('lgpd')
   }
 
+  const selectedItem = items.find(h => h.id === selectedId) ?? null
+
   return (
     <ScreenWrap>
       <NavBar title="Histórico de Triagens" onBack={() => navigate('profile')} />
       <Content>
-        {selected !== null ? (
-          // Detail view
-          <HistoryDetail item={HISTORY_ITEMS.find(h => h.id === selected)!} onBack={() => setSelected(null)} navigate={navigate} />
+        {selectedItem ? (
+          <HistoryDetail item={selectedItem} onBack={() => setSelectedId(null)} navigate={navigate} />
+        ) : items.length === 0 ? (
+          // Nenhuma triagem registrada ainda
+          <div style={{ textAlign: 'center', paddingTop: 48 }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+            <BodyText>
+              Você ainda não tem nenhuma triagem registrada. Suas próximas triagens vão aparecer aqui.
+            </BodyText>
+            <div style={{ marginTop: 16 }}>
+              <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
+            </div>
+          </div>
         ) : (
-          // List view
+          // Lista real de triagens
           <>
             <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>
-              {HISTORY_ITEMS.length} triagens realizadas
+              {items.length} {items.length === 1 ? 'triagem realizada' : 'triagens realizadas'}
             </div>
 
-            {HISTORY_ITEMS.map(item => (
-              <ListRow key={item.id} onClick={() => setSelected(item.id)}>
+            {items.map(item => (
+              <ListRow key={item.id} onClick={() => setSelectedId(item.id)}>
                 {/* Date badge */}
                 <div style={{
                   width: 44, height: 44, borderRadius: 8, backgroundColor: '#EAF2F6',
@@ -424,7 +439,7 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
                     {item.date.slice(0, 2)}
                   </div>
                   <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(item.date.slice(3, 5)) - 1]}
+                    {MONTH_ABBR[parseInt(item.date.slice(3, 5)) - 1] ?? ''}
                   </div>
                 </div>
 
@@ -464,7 +479,7 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
 }
 
 function HistoryDetail({ item, onBack, navigate }: {
-  item: { id: number; date: string; symptom: string; classification: string; level: 'red' | 'orange' | 'yellow' | 'green' | 'blue' }
+  item: TriageHistoryEntry
   onBack: () => void
   navigate: Navigate
 }) {
@@ -474,6 +489,8 @@ function HistoryDetail({ item, onBack, navigate }: {
     resetAnswers()
     navigate('lgpd')
   }
+
+  const yesNoLabel = (v: 'sim' | 'nao' | null) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : '—')
 
   return (
     <>
@@ -500,23 +517,39 @@ function HistoryDetail({ item, onBack, navigate }: {
       </div>
 
       <Divider />
+      <SectionTitle>Por que essa classificação?</SectionTitle>
+      <div style={{ backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF', borderRadius: 6, padding: '10px 12px', marginBottom: 14 }}>
+        {item.reasons.map((reason, i) => (
+          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: i < item.reasons.length - 1 ? 6 : 0 }}>
+            <span style={{ color: '#155E8A', fontSize: 12, flexShrink: 0 }}>●</span>
+            <span style={{ fontSize: 12, color: '#3A5468', lineHeight: 1.4 }}>{reason}</span>
+          </div>
+        ))}
+      </div>
+
       <SectionTitle>Respostas Registradas</SectionTitle>
       <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
         {[
-          { label: 'Sintoma', value: item.symptom },
-          { label: 'Duração', value: 'Hoje (6–24h)' },
-          { label: 'Febre', value: 'Sim' },
-          { label: 'Dor intensa', value: 'Não' },
-          { label: 'Piora rápida', value: 'Não' },
-          { label: 'Grupo de risco', value: 'Nenhum' },
-          { label: 'Medicamentos', value: 'Losartana 50mg' },
+          { label: 'Sintoma', value: item.answers.symptom || item.answers.symptomOther || '—' },
+          { label: 'Duração', value: item.answers.duration || '—' },
+          { label: 'Febre', value: yesNoLabel(item.answers.fever) },
+          { label: 'Dor intensa', value: yesNoLabel(item.answers.intensePain) },
+          { label: 'Falta de ar', value: yesNoLabel(item.answers.breathingDifficulty) },
+          { label: 'Piora rápida', value: yesNoLabel(item.answers.rapidWorsening) },
+          { label: 'Grupo de risco', value: item.answers.vulnerableGroups.length ? item.answers.vulnerableGroups.join(', ') : 'Nenhum' },
+          {
+            label: 'Medicamentos',
+            value: item.answers.usingMedication === 'sim'
+              ? (item.answers.medicationDetails || 'Sim (não especificado)')
+              : yesNoLabel(item.answers.usingMedication),
+          },
         ].map(({ label, value }, i, arr) => (
           <div key={label} style={{
             display: 'flex', justifyContent: 'space-between', padding: '8px 12px',
-            borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none',
+            borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none', gap: 12,
           }}>
-            <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
-            <span style={{ fontSize: 12, color: '#16324F' }}>{value}</span>
+            <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
+            <span style={{ fontSize: 12, color: '#16324F', textAlign: 'right' }}>{value}</span>
           </div>
         ))}
       </div>

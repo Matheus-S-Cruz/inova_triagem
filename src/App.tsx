@@ -89,9 +89,10 @@ function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Naviga
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<ScreenId>('home')
-  const [navOpen, setNavOpen] = useState(false) // drawer mobile (≤860px)
-  const [navCollapsed, setNavCollapsed] = useState(false) // menu minimizado (desktop, >860px)
+  const [screen, setScreen] = useState<ScreenId>('register') // ← era 'home'
+  const [navOpen, setNavOpen] = useState(false)
+  const [navCollapsed, setNavCollapsed] = useState(false)
+  // ...restante do arquivo sem alterações
 
   const navigate: Navigate = (to) => {
     setScreen(to)
@@ -274,7 +275,7 @@ export default function App() {
                 </button>
               </>
             )
-          })()}
+            })()}
         </div>
       </main>
     </div>
