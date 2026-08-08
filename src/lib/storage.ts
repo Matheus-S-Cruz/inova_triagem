@@ -66,6 +66,8 @@ function saveAllUsers(users: Usuario[]) {
   window.localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
+/** Resultado de operações que podem ser recusadas por duplicidade de conta. */
+export type SaveUserResult = { ok: true } | { ok: false; error: string }
 
 export const UserStorage = {
   /** Retorna a conta atualmente logada nesta aba (ou null). */
@@ -75,9 +77,41 @@ export const UserStorage = {
     if (!sessionId) return null
     return getAllUsers().find((u) => u.id === sessionId) ?? null
   },
-  /** Cria ou atualiza uma conta na lista e já loga com ela. */
-  save(data: Usuario) {
+  /**
+   * Verifica se e-mail ou telefone já pertencem a OUTRA conta, sem salvar
+   * nada. Permite ao Cadastro avisar o usuário antes de avançar de etapa
+   * (ex: logo após preencher Telefone/E-mail no step 1), em vez de só no
+   * fim do fluxo. save() reaproveita esta mesma checagem como garantia final.
+   */
+  checkDuplicate(data: Usuario): SaveUserResult {
+    const users = getAllUsers()
+    const emailClean = data.email.trim().toLowerCase()
+    const phoneDigits = data.telefone.replace(/\D/g, '')
+    const duplicate = users.find((u) => {
+      if (u.id === data.id) return false // não compara consigo mesma (edição de perfil)
+      const sameEmail = !!emailClean && u.email.trim().toLowerCase() === emailClean
+      const samePhone = !!phoneDigits && u.telefone.replace(/\D/g, '') === phoneDigits
+      return sameEmail || samePhone
+    })
+    if (!duplicate) return { ok: true }
+    const sameEmail = !!emailClean && duplicate.email.trim().toLowerCase() === emailClean
+    return {
+      ok: false,
+      error: sameEmail
+        ? 'Já existe uma conta cadastrada com este e-mail.'
+        : 'Já existe uma conta cadastrada com este telefone.',
+    }
+  },
+  /**
+   * Cria ou atualiza uma conta na lista e já loga com ela.
+   * Recusa a operação se e-mail ou telefone já pertencerem a OUTRA conta.
+   */
+  save(data: Usuario): SaveUserResult {
     const withId = data.id ? data : { ...data, id: generateUserId() }
+
+    const dup = UserStorage.checkDuplicate(withId)
+    if (!dup.ok) return dup
+
     const users = getAllUsers()
     const idx = users.findIndex((u) => u.id === withId.id)
     if (idx >= 0) {
@@ -88,6 +122,7 @@ export const UserStorage = {
     saveAllUsers(users)
     window.localStorage.removeItem(GUEST_KEY)
     window.localStorage.setItem(SESSION_KEY, withId.id) // cadastrar já loga com essa conta
+    return { ok: true }
   },
   /** Apaga só a conta logada e todos os dados dela — não afeta outras contas. */
   deleteAccount() {

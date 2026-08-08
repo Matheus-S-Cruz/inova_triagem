@@ -23,6 +23,9 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
   const [telefoneError, setTelefoneError] = useState('')
   const [senhaError, setSenhaError] = useState('')
   const [termosError, setTermosError] = useState(false)
+  // Aviso de e-mail/telefone já cadastrado — checado no step 1 (dados
+  // pessoais), antes do usuário avançar para preencher alergias/saúde.
+  const [duplicateError, setDuplicateError] = useState('')
 
   const update = (key: keyof Usuario) => (value: string) =>
     setForm(prev => ({ ...prev, [key]: value }))
@@ -52,6 +55,13 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
     } else {
       setSenhaError('')
     }
+    const dup = UserStorage.checkDuplicate(form)
+    if (!dup.ok) {
+      setDuplicateError(dup.error)
+      ok = false
+    } else {
+      setDuplicateError('')
+    }
     return ok
   }
 
@@ -65,7 +75,15 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
       return
     }
     setTermosError(false)
-    UserStorage.save({ ...form, contaCriadaEm: new Date().toISOString() })
+    const result = UserStorage.save({ ...form, contaCriadaEm: new Date().toISOString() })
+    if (!result.ok) {
+      // Rede de segurança: já foi checado no step 1, mas cobre o caso raro
+      // de a mesma conta ter sido criada em outra aba nesse meio-tempo.
+      setDuplicateError(result.error)
+      setStep(1)
+      return
+    }
+    setDuplicateError('')
     navigate('lgpd')
   }
 
@@ -102,7 +120,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
               ⚠ É preciso aceitar os termos para continuar
             </div>
           )}
-          
+
          <div
            onClick={() => setForm(prev => ({ ...prev, receberNotificacoes: !prev.receberNotificacoes }))}
            style={{ cursor: 'pointer', marginTop: 8 }}
@@ -160,6 +178,12 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
           label="E-mail" placeholder="nome@email.com" hint="Opcional" type="email"
           value={form.email} onChange={update('email')}
         />
+
+        {duplicateError && (
+          <div style={{ fontSize: 11, color: '#DC2626', marginBottom: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+            ⚠ {duplicateError}
+          </div>
+        )}
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#4E6A80', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -227,6 +251,8 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Usuario | null>(saved)
   const [justSaved, setJustSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { resetAnswers } = useTriage()
 
   const update = (key: keyof Usuario) => (value: string) =>
@@ -239,7 +265,12 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
   const handleSave = () => {
     if (!form) return
-    UserStorage.save(form)
+    const result = UserStorage.save(form)
+    if (!result.ok) {
+      setSaveError(result.error)
+      return
+    }
+    setSaveError('')
     setSaved(form)
     setEditing(false)
     setJustSaved(true)
@@ -248,6 +279,12 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
   const handleLogout = () => {
     UserStorage.logout()
+    navigate('home')
+  }
+
+  const handleDeleteAccount = () => {
+    UserStorage.deleteAccount()
+    setShowDeleteConfirm(false)
     navigate('home')
   }
 
@@ -394,6 +431,11 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
         {editing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {saveError && (
+              <div style={{ fontSize: 11, color: '#DC2626', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                ⚠ {saveError}
+              </div>
+            )}
             <Btn label="Salvar alterações" onClick={handleSave} variant="primary" />
             <Btn label="Cancelar" onClick={() => setEditing(false)} variant="ghost" />
           </div>
@@ -402,6 +444,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
             <Btn label="Ver histórico de triagens" onClick={() => navigate('history')} variant="secondary" />
             <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
             <Btn label="Sair da conta" onClick={handleLogout} variant="ghost" />
+            <Btn label="Excluir conta" onClick={() => setShowDeleteConfirm(true)} variant="danger" />
           </div>
         )}
 
@@ -410,6 +453,36 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
           'Dados sensíveis de saúde com campo "Visibilidade" para ocultar em tela',
         ]} />
       </Content>
+
+      {showDeleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirmar exclusão de conta"
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 42, 74, 0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20, zIndex: 50,
+          }}
+        >
+          <div style={{
+            backgroundColor: '#fff', borderRadius: 12, padding: '18px 18px 16px',
+            width: '100%', maxWidth: 360,
+            boxShadow: '0 20px 40px rgba(15,42,74,0.3)',
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#0F2A4A', marginBottom: 4 }}>
+              Excluir conta permanentemente?
+            </div>
+            <div style={{ fontSize: 12, color: '#3A5468', marginBottom: 16, lineHeight: 1.5 }}>
+              Isso vai apagar sua conta e todo o seu histórico de triagens. Essa ação não pode ser desfeita.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Btn label="Sim, excluir minha conta" onClick={handleDeleteAccount} variant="danger" />
+              <Btn label="Cancelar" onClick={() => setShowDeleteConfirm(false)} variant="ghost" />
+            </div>
+          </div>
+        </div>
+      )}
     </ScreenWrap>
   )
 }

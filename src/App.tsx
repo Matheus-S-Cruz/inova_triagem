@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MobilePage } from './components/Wire'
 import { TriageProvider } from './context/TriageContext'
 import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1' 
@@ -64,6 +64,16 @@ const FLOWS = [
   },
 ]
 
+// Conjunto de todos os ids válidos (derivado de FLOWS), usado para validar
+// o hash da URL — evita duplicar a lista de screens em outro lugar.
+const ALL_SCREEN_IDS = new Set(FLOWS.flatMap((f) => f.screens).map((s) => s.id)) as Set<ScreenId>
+
+/** Lê a tela atual a partir de window.location.hash (ex: "#profile" → 'profile'). */
+function getScreenFromHash(): ScreenId {
+  const hash = window.location.hash.replace('#', '') as ScreenId
+  return ALL_SCREEN_IDS.has(hash) ? hash : 'home'
+}
+
 function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Navigate }) {
   switch (screen) {
     case 'home': return <HomeScreen navigate={navigate} />
@@ -91,13 +101,26 @@ function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Naviga
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<ScreenId>('home') // ← era 'home'
+  // A tela inicial vem do hash da URL (se houver um válido), em vez de
+  // sempre começar em 'home'. Isso faz o F5 manter a tela atual.
+  const [screen, setScreen] = useState<ScreenId>(() =>
+    typeof window !== 'undefined' ? getScreenFromHash() : 'home'
+  )
   const [navOpen, setNavOpen] = useState(false)
   const [navCollapsed, setNavCollapsed] = useState(false)
-  // ...restante do arquivo sem alterações
+
+  // Mantém a tela sincronizada com a URL: reage ao voltar/avançar do
+  // navegador (evento hashchange) trocando a tela sem precisar de
+  // react-router.
+  useEffect(() => {
+    const onHashChange = () => setScreen(getScreenFromHash())
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
 
   const navigate: Navigate = (to) => {
     setScreen(to)
+    window.location.hash = to // grava a tela atual na URL (sobrevive a F5)
     setNavOpen(false) // fecha o drawer ao navegar, em telas pequenas
   }
 
