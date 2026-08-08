@@ -21,6 +21,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
   const [form, setForm] = useState<Usuario>(emptyUsuario())
   const [nomeError, setNomeError] = useState('')
   const [telefoneError, setTelefoneError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [senhaError, setSenhaError] = useState('')
   const [termosError, setTermosError] = useState(false)
   // Aviso de e-mail/telefone já cadastrado — checado no step 1 (dados
@@ -48,6 +49,16 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
       ok = false
     } else {
       setTelefoneError('')
+    }
+    const emailTrimmed = form.email.trim()
+    if (!emailTrimmed) {
+      setEmailError('Informe um e-mail para contato')
+      ok = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      setEmailError('Informe um e-mail válido')
+      ok = false
+    } else {
+      setEmailError('')
     }
     if (!form.senha.trim() || form.senha.length < 4) {
       setSenhaError('Crie uma senha com pelo menos 4 caracteres')
@@ -175,8 +186,8 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
            value={form.senha} onChange={update('senha')} error={senhaError}
          />
         <Field
-          label="E-mail" placeholder="nome@email.com" hint="Opcional" type="email"
-          value={form.email} onChange={update('email')}
+          label="E-mail" placeholder="nome@email.com" required type="email"
+          value={form.email} onChange={update('email')} error={emailError}
         />
 
         {duplicateError && (
@@ -252,6 +263,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const [form, setForm] = useState<Usuario | null>(saved)
   const [justSaved, setJustSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { resetAnswers } = useTriage()
 
@@ -260,17 +272,24 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
   const startEdit = () => {
     setForm(saved)
+    setCurrentPassword('')
+    setSaveError('')
     setEditing(true)
   }
 
   const handleSave = () => {
     if (!form) return
+    if (currentPassword !== saved?.senha) {
+      setSaveError('Senha atual incorreta.')
+      return
+    }
     const result = UserStorage.save(form)
     if (!result.ok) {
       setSaveError(result.error)
       return
     }
     setSaveError('')
+    setCurrentPassword('')
     setSaved(form)
     setEditing(false)
     setJustSaved(true)
@@ -431,11 +450,12 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
         {editing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {saveError && (
-              <div style={{ fontSize: 11, color: '#DC2626', fontFamily: 'Inter, system-ui, sans-serif' }}>
-                ⚠ {saveError}
-              </div>
-            )}
+            <Field
+              label="Senha atual" placeholder="Confirme sua senha para salvar"
+              value={currentPassword} onChange={setCurrentPassword}
+              error={saveError || undefined}
+            />
+           
             <Btn label="Salvar alterações" onClick={handleSave} variant="primary" />
             <Btn label="Cancelar" onClick={() => setEditing(false)} variant="ghost" />
           </div>
