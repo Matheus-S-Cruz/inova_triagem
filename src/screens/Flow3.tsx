@@ -5,7 +5,6 @@ import type { Navigate } from "../App"
 import {
   NavBar,
   Btn,
-  MapBox,
   OccupancyTag,
   WaitTime,
   SectionTitle,
@@ -15,6 +14,8 @@ import {
   Content,
   ListRow,
 } from "../components/Wire"
+
+import { LocationMap } from "../components/LocationMap"
 
 // ─── Unit data ────────────────────────────────────────────────────────────────
 
@@ -198,7 +199,10 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
       <Content noPad>
         <div style={{ padding: "12px 16px" }}>
-          <MapBox onTap={() => navigate("unitdetail")} />
+          {/* TODO: quando tiver o array de unidades vindo do backend/classificação,
+          passe via `units={unidadesProximas}` e
+          `onUnitClick={(u) => navigate("unitdetail")}` */}
+          <LocationMap />
         </div>
 
         <div style={{ padding: "0 16px 8px" }}>
