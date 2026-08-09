@@ -111,6 +111,8 @@ const ALL_SCREEN_IDS = new Set(
 /** Lê a tela atual a partir de window.location.hash (ex: "#profile" → 'profile'). */
 
 function getScreenFromHash(): ScreenId {
+  // Lê a tela salva na URL (#profile, #q1, etc). Se o hash não existir
+  // ou for inválido, cai no fallback "home" — assim um F5 não perde o lugar
   const hash = window.location.hash.replace("#", "") as ScreenId
 
   return ALL_SCREEN_IDS.has(hash) ? hash : "home"

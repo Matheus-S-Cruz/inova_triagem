@@ -23,7 +23,7 @@ export interface Usuario {
 
   email: string
 
-  senha: string
+  senha: string // ⚠️ Em texto puro só porque é protótipo local — no backend real isso precisa ser hasheado (bcrypt/argon2)
 
   sexoBiologico: string // 'Feminino' | 'Masculino' | 'Outro' | ''
 
@@ -86,11 +86,11 @@ function generateUserId(): string {
   return `u_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
-const USERS_KEY = "triagem_app_usuarios" // lista de todas as contas cadastradas
+const USERS_KEY = "triagem_app_usuarios" // lista de todas as contas cadastradas (array no localStorage)
 
-const GUEST_KEY = "triagem_app_convidado"
+const GUEST_KEY = "triagem_app_convidado" // marca que o usuário optou por "continuar sem cadastro"
 
-const SESSION_KEY = "triagem_app_sessao"
+const SESSION_KEY = "triagem_app_sessao" // guarda só o ID do usuário logado nesta aba/navegador
 
 function getAllUsers(): Usuario[] {
   if (typeof window === "undefined") return []
@@ -106,7 +106,7 @@ function saveAllUsers(users: Usuario[]) {
 
 /** Resultado de operações que podem ser recusadas por duplicidade de conta. */
 
-export type SaveUserResult = { ok: true } | { ok: false error: string }
+export type SaveUserResult = { ok: true } | { ok: false; error: string }
 
 export const UserStorage = {
   /** Retorna a conta atualmente logada nesta aba (ou null). */
@@ -129,6 +129,8 @@ export const UserStorage = {
    */
 
   checkDuplicate(data: Usuario): SaveUserResult {
+    // Verifica e-mail e telefone contra TODAS as contas já cadastradas,
+    // exceto a própria conta (permite salvar/editar sem "duplicar consigo mesma")
     const users = getAllUsers()
 
     const emailClean = data.email.trim().toLowerCase()
@@ -167,8 +169,11 @@ export const UserStorage = {
    */
 
   save(data: Usuario): SaveUserResult {
+    // Se não tem id ainda, é uma conta nova → gera um id único
     const withId = data.id ? data : { ...data, id: generateUserId() }
 
+    // Roda a mesma checagem de duplicidade de novo aqui, como rede de segurança final
+    // (o RegisterScreen já validou no step 1, mas cobre corridas entre abas)
     const dup = UserStorage.checkDuplicate(withId)
 
     if (!dup.ok) return dup
@@ -195,6 +200,7 @@ export const UserStorage = {
   /** Apaga só a conta logada e todos os dados dela — não afeta outras contas. */
 
   deleteAccount() {
+    // Some com a conta E com todo o histórico de triagens dela — ação irreversível
     const account = UserStorage.get()
 
     if (!account) return
@@ -232,9 +238,10 @@ export const UserStorage = {
     return null
   },
 
-  /** Só encerra a sessão — a conta continua salva pra próximo login. */
+  
 
   logout() {
+    // Diferente de deleteAccount(): aqui só encerra a sessão, a conta continua salva
     window.localStorage.removeItem(SESSION_KEY)
   },
 

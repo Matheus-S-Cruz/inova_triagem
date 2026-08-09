@@ -130,7 +130,7 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
     if (!form.termosAceitos) {
       setTermosError(true)
 
-      return
+      return // bloqueia a criação da conta se os termos não foram aceitos
     }
 
     setTermosError(false)
@@ -481,6 +481,7 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const handleSave = () => {
     if (!form) return
 
+    // Exige a senha atual antes de aplicar qualquer alteração no perfil
     if (currentPassword !== saved?.senha) {
       setSaveError("Senha atual incorreta.")
 

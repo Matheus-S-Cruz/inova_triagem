@@ -126,6 +126,7 @@ const LONG_DURATIONS = ["4 a 7 dias", "Mais de 1 semana"]
 export function classifyRisk(a: TriageAnswers): TriageResult {
   const reasons: string[] = []
 
+  // Sinalizadores calculados uma vez, reaproveitados em várias regras abaixo
   const hasHighRiskGroup = a.vulnerableGroups.some((g) =>
     HIGH_RISK_GROUPS.includes(g),
   )
@@ -140,6 +141,9 @@ export function classifyRisk(a: TriageAnswers): TriageResult {
   const isGI = a.symptom !== null && GI_SYMPTOMS.includes(a.symptom)
 
   // ── VERMELHO — Emergência (Hospital): risco imediato de vida ───────────
+  // A árvore é avaliada nesta ordem (vermelho → laranja → amarelo → verde)
+  // e retorna no primeiro critério que bater — por isso a ordem importa:
+  // sinais mais graves são checados primeiro.
 
   if (
     a.symptom === "Dor no peito" &&

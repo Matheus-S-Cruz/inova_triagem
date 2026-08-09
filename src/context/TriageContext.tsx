@@ -70,11 +70,13 @@ export function TriageProvider({ children }: { children: ReactNode }) {
   const toggleVulnerableGroup = (group: string, noneLabel: string) => {
     setAnswers((prev) => {
       const isSelected = prev.vulnerableGroups.includes(group)
-
+      
+      // Marcar "Nenhuma das anteriores" limpa qualquer outra seleção
       if (group === noneLabel) {
         return { ...prev, vulnerableGroups: isSelected ? [] : [noneLabel] }
       }
-
+      
+      // Marcar qualquer outra opção automaticamente desmarca "Nenhuma"
       const withoutNone = prev.vulnerableGroups.filter((g) => g !== noneLabel)
 
       const next = isSelected
@@ -94,6 +96,8 @@ export function TriageProvider({ children }: { children: ReactNode }) {
   const markHistorySaved = () => setHistorySaved(true)
 
   const result = useMemo(() => classifyRisk(answers), [answers])
+  // Recalcula a classificação de risco toda vez que uma resposta muda —
+  // é isso que substitui o antigo nível fixo "orange" do wireframe
 
   return (
     <TriageContext.Provider
