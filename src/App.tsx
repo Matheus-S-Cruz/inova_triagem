@@ -1,163 +1,294 @@
-import { useEffect, useState } from 'react'
-import { MobilePage } from './components/Wire'
-import { TriageProvider } from './context/TriageContext'
-import { HomeScreen, LGPDScreen, Q1Screen, Q2Screen, Q3Screen, Q4Screen, Q5Screen, Q6Screen } from './screens/Flow1' 
-import { ResultScreen } from './screens/Flow2'
-import { MapScreen, UnitListScreen, UnitDetailScreen } from './screens/Flow3'
-import { RegisterScreen, LoginScreen, ProfileScreen, HistoryScreen } from './screens/Flow4'
-import { TeamLoginScreen, OccupancyScreen, AdminScreen } from './screens/Flow5'
+import { useEffect, useState } from "react"
 
-export type ScreenId =
-  | 'home' | 'lgpd' | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6'
-  | 'result' 
-  | 'map' | 'unitlist' | 'unitdetail'
-  | 'register' | 'login' | 'profile' | 'history'
-  | 'teamlogin' | 'occupancy' | 'admin'
+import { MobilePage } from "./components/Wire"
+
+import { TriageProvider } from "./context/TriageContext"
+
+import {
+  HomeScreen,
+  LGPDScreen,
+  Q1Screen,
+  Q2Screen,
+  Q3Screen,
+  Q4Screen,
+  Q5Screen,
+  Q6Screen,
+} from "./screens/Flow1"
+
+import { ResultScreen } from "./screens/Flow2"
+
+import { MapScreen, UnitListScreen, UnitDetailScreen } from "./screens/Flow3"
+
+import {
+  RegisterScreen,
+  LoginScreen,
+  ProfileScreen,
+  HistoryScreen,
+} from "./screens/Flow4"
+
+import { TeamLoginScreen, OccupancyScreen, AdminScreen } from "./screens/Flow5"
+
+export type ScreenId = "home" | "lgpd" | "q1" | "q2" | "q3" | "q4" | "q5" | "q6" | "result" | "map" | "unitlist" | "unitdetail" | "register" | "login" | "profile" | "history" | "teamlogin" | "occupancy" | "admin"
 
 export type Navigate = (to: ScreenId) => void
 
 const FLOWS = [
   {
-    label: 'Fluxo 1 — Entrada e Triagem',
+    label: "Fluxo 1 — Entrada e Triagem",
+
     screens: [
-      { id: 'home', label: '1. Tela Inicial' },
-      { id: 'lgpd', label: '2. Consentimento LGPD' },
-      { id: 'q1', label: '3a. Sintoma Principal' },
-      { id: 'q2', label: '3b. Duração' },
-      { id: 'q3', label: '3c. Febre / Dor / Falta de ar' },
-      { id: 'q4', label: '3d. Piora Rápida' },
-      { id: 'q5', label: '3e. Grupo Vulnerável' },
-      { id: 'q6', label: '3f. Medicamentos' },
+      { id: "home", label: "1. Tela Inicial" },
+
+      { id: "lgpd", label: "2. Consentimento LGPD" },
+
+      { id: "q1", label: "3a. Sintoma Principal" },
+
+      { id: "q2", label: "3b. Duração" },
+
+      { id: "q3", label: "3c. Febre / Dor / Falta de ar" },
+
+      { id: "q4", label: "3d. Piora Rápida" },
+
+      { id: "q5", label: "3e. Grupo Vulnerável" },
+
+      { id: "q6", label: "3f. Medicamentos" },
     ],
   },
+
   {
-    label: 'Fluxo 2 — Resultado',
+    label: "Fluxo 2 — Resultado",
+
+    screens: [{ id: "result", label: "4. Classificação de Risco" }],
+  },
+
+  {
+    label: "Fluxo 3 — Mapa e Lotação",
+
     screens: [
-      { id: 'result', label: '4. Classificação de Risco' },
-      
+      { id: "map", label: "6. Mapa de Unidades" },
+
+      { id: "unitlist", label: "7. Lista de Unidades" },
+
+      { id: "unitdetail", label: "8. Detalhe da Unidade" },
     ],
   },
+
   {
-    label: 'Fluxo 3 — Mapa e Lotação',
+    label: "Fluxo 4 — Perfil e Histórico",
+
     screens: [
-      { id: 'map', label: '6. Mapa de Unidades' },
-      { id: 'unitlist', label: '7. Lista de Unidades' },
-      { id: 'unitdetail', label: '8. Detalhe da Unidade' },
+      { id: "register", label: "9. Cadastro" },
+
+      { id: "login", label: "9b. Entrar" },
+
+      { id: "profile", label: "10. Perfil do Usuário" },
+
+      { id: "history", label: "11. Histórico de Triagens" },
     ],
   },
+
   {
-    label: 'Fluxo 4 — Perfil e Histórico',
+    label: "Fluxo 5 — Painel da Unidade",
+
     screens: [
-      { id: 'register', label: '9. Cadastro' },
-      { id: 'login', label: '9b. Entrar' },
-      { id: 'profile', label: '10. Perfil do Usuário' },
-      { id: 'history', label: '11. Histórico de Triagens' },
-    ],
-  },
-  {
-    label: 'Fluxo 5 — Painel da Unidade',
-    screens: [
-      { id: 'teamlogin', label: '12. Login da Equipe' },
-      { id: 'occupancy', label: '13. Atualizar Lotação' },
-      { id: 'admin', label: '14. Painel Administrativo' },
+      { id: "teamlogin", label: "12. Login da Equipe" },
+
+      { id: "occupancy", label: "13. Atualizar Lotação" },
+
+      { id: "admin", label: "14. Painel Administrativo" },
     ],
   },
 ]
 
 // Conjunto de todos os ids válidos (derivado de FLOWS), usado para validar
+
 // o hash da URL — evita duplicar a lista de screens em outro lugar.
-const ALL_SCREEN_IDS = new Set(FLOWS.flatMap((f) => f.screens).map((s) => s.id)) as Set<ScreenId>
+
+const ALL_SCREEN_IDS = new Set(
+  FLOWS.flatMap((f) => f.screens).map((s) => s.id),
+) as Set<ScreenId>
 
 /** Lê a tela atual a partir de window.location.hash (ex: "#profile" → 'profile'). */
+
 function getScreenFromHash(): ScreenId {
-  const hash = window.location.hash.replace('#', '') as ScreenId
-  return ALL_SCREEN_IDS.has(hash) ? hash : 'home'
+  const hash = window.location.hash.replace("#", "") as ScreenId
+
+  return ALL_SCREEN_IDS.has(hash) ? hash : "home"
 }
 
-function ScreenRouter({ screen, navigate }: { screen: ScreenId; navigate: Navigate }) {
+function ScreenRouter({
+  screen,
+  navigate,
+}: {
+  screen: ScreenId
+  navigate: Navigate
+}) {
   switch (screen) {
-    case 'home': return <HomeScreen navigate={navigate} />
-    case 'lgpd': return <LGPDScreen navigate={navigate} />
-    case 'q1': return <Q1Screen navigate={navigate} />
-    case 'q2': return <Q2Screen navigate={navigate} />
-    case 'q3': return <Q3Screen navigate={navigate} />
-    case 'q4': return <Q4Screen navigate={navigate} />
-    case 'q5': return <Q5Screen navigate={navigate} />
-    case 'q6': return <Q6Screen navigate={navigate} />
-    case 'result': return <ResultScreen navigate={navigate} />
-    
-    case 'map': return <MapScreen navigate={navigate} />
-    case 'unitlist': return <UnitListScreen navigate={navigate} />
-    case 'unitdetail': return <UnitDetailScreen navigate={navigate} />
-    case 'register': return <RegisterScreen navigate={navigate} />
-    case 'login': return <LoginScreen navigate={navigate} />
-    case 'profile': return <ProfileScreen navigate={navigate} />
-    case 'history': return <HistoryScreen navigate={navigate} />
-    case 'teamlogin': return <TeamLoginScreen navigate={navigate} />
-    case 'occupancy': return <OccupancyScreen navigate={navigate} />
-    case 'admin': return <AdminScreen navigate={navigate} />
-    default: return <HomeScreen navigate={navigate} />
+    case "home":
+      return <HomeScreen navigate={navigate} />
+
+    case "lgpd":
+      return <LGPDScreen navigate={navigate} />
+
+    case "q1":
+      return <Q1Screen navigate={navigate} />
+
+    case "q2":
+      return <Q2Screen navigate={navigate} />
+
+    case "q3":
+      return <Q3Screen navigate={navigate} />
+
+    case "q4":
+      return <Q4Screen navigate={navigate} />
+
+    case "q5":
+      return <Q5Screen navigate={navigate} />
+
+    case "q6":
+      return <Q6Screen navigate={navigate} />
+
+    case "result":
+      return <ResultScreen navigate={navigate} />
+
+    case "map":
+      return <MapScreen navigate={navigate} />
+
+    case "unitlist":
+      return <UnitListScreen navigate={navigate} />
+
+    case "unitdetail":
+      return <UnitDetailScreen navigate={navigate} />
+
+    case "register":
+      return <RegisterScreen navigate={navigate} />
+
+    case "login":
+      return <LoginScreen navigate={navigate} />
+
+    case "profile":
+      return <ProfileScreen navigate={navigate} />
+
+    case "history":
+      return <HistoryScreen navigate={navigate} />
+
+    case "teamlogin":
+      return <TeamLoginScreen navigate={navigate} />
+
+    case "occupancy":
+      return <OccupancyScreen navigate={navigate} />
+
+    case "admin":
+      return <AdminScreen navigate={navigate} />
+
+    default:
+      return <HomeScreen navigate={navigate} />
   }
 }
 
 export default function App() {
   // A tela inicial vem do hash da URL (se houver um válido), em vez de
+
   // sempre começar em 'home'. Isso faz o F5 manter a tela atual.
+
   const [screen, setScreen] = useState<ScreenId>(() =>
-    typeof window !== 'undefined' ? getScreenFromHash() : 'home'
+    typeof window !== "undefined" ? getScreenFromHash() : "home",
   )
+
   const [navOpen, setNavOpen] = useState(false)
+
   const [navCollapsed, setNavCollapsed] = useState(false)
 
   // Mantém a tela sincronizada com a URL: reage ao voltar/avançar do
+
   // navegador (evento hashchange) trocando a tela sem precisar de
+
   // react-router.
+
   useEffect(() => {
     const onHashChange = () => setScreen(getScreenFromHash())
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+
+    window.addEventListener("hashchange", onHashChange)
+
+    return () => window.removeEventListener("hashchange", onHashChange)
   }, [])
 
   const navigate: Navigate = (to) => {
     setScreen(to)
+
     window.location.hash = to // grava a tela atual na URL (sobrevive a F5)
+
     setNavOpen(false) // fecha o drawer ao navegar, em telas pequenas
   }
 
-  const currentLabel = FLOWS.flatMap(f => f.screens).find(s => s.id === screen)?.label ?? ''
+  const currentLabel =
+    FLOWS.flatMap((f) => f.screens).find((s) => s.id === screen)?.label ?? ""
 
   return (
-    <div className="app-shell" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div
+      className="app-shell"
+      style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
+    >
       {/* Topbar só aparece em telas estreitas (ver .app-topbar no index.css) */}
       <div className="app-topbar">
         <button
-          onClick={() => setNavOpen(v => !v)}
+          onClick={() => setNavOpen((v) => !v)}
           aria-label="Abrir navegação de telas"
           style={{
-            background: 'none', border: '1px solid #155E8A', borderRadius: 6,
-            color: '#fff', fontSize: 16, padding: '4px 10px', cursor: 'pointer',
+            background: "none",
+            border: "1px solid #155E8A",
+            borderRadius: 6,
+
+            color: "#fff",
+            fontSize: 16,
+            padding: "4px 10px",
+            cursor: "pointer",
           }}
         >
           ☰
         </button>
-        <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>Triagem+</span>
+        <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
+          Triagem+
+        </span>
       </div>
 
       {/* Sidebar navigator (ferramenta de dev — não faz parte do produto final) */}
       <aside
-        className={`app-sidebar${navOpen ? ' open' : ''}${navCollapsed ? ' collapsed' : ''}`}
-        style={{ backgroundColor: '#0F2A4A', color: '#C6D5E0', overflowY: 'auto' }}
+        className={`app-sidebar${navOpen ? " open" : ""}${
+          navCollapsed ? " collapsed" : ""
+        }`}
+        style={{
+          backgroundColor: "#0F2A4A",
+          color: "#C6D5E0",
+          overflowY: "auto",
+        }}
       >
-        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #155E8A', position: 'relative' }}>
+        <div
+          style={{
+            padding: "14px 12px 10px",
+            borderBottom: "1px solid #155E8A",
+            position: "relative",
+          }}
+        >
           {/* X — fecha o drawer no mobile */}
           {navOpen && (
             <button
               onClick={() => setNavOpen(false)}
               aria-label="Fechar navegação"
               style={{
-                position: 'absolute', top: 10, right: 10,
-                background: 'none', border: '1px solid #155E8A', borderRadius: 6,
-                color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
+                position: "absolute",
+                top: 10,
+                right: 10,
+
+                background: "none",
+                border: "1px solid #155E8A",
+                borderRadius: 6,
+
+                color: "#fff",
+                fontSize: 14,
+                width: 26,
+                height: 26,
+                cursor: "pointer",
               }}
             >
               ✕
@@ -169,31 +300,65 @@ export default function App() {
             onClick={() => setNavCollapsed(true)}
             aria-label="Minimizar menu"
             style={{
-              position: 'absolute', top: 10, right: 10,
-              background: 'none', border: '1px solid #155E8A', borderRadius: 6,
-              color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
-              alignItems: 'center', justifyContent: 'center',
+              position: "absolute",
+              top: 10,
+              right: 10,
+
+              background: "none",
+              border: "1px solid #155E8A",
+              borderRadius: 6,
+
+              color: "#fff",
+              fontSize: 14,
+              width: 26,
+              height: 26,
+              cursor: "pointer",
+
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             ‹
           </button>
-          <div style={{ fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif', color: '#4E6A80', letterSpacing: '0.08em', marginBottom: 3 }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontFamily: "Inter, system-ui, sans-serif",
+              color: "#4E6A80",
+              letterSpacing: "0.08em",
+              marginBottom: 3,
+            }}
+          >
             PROTÓTIPO LO-FI
           </div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#fff",
+              letterSpacing: "-0.01em",
+            }}
+          >
             Triagem+
           </div>
-          <div style={{ fontSize: 9, color: '#4E6A80', marginTop: 1 }}>
+          <div style={{ fontSize: 9, color: "#4E6A80", marginTop: 1 }}>
             Wireframe · 14 telas · 5 fluxos
           </div>
         </div>
 
         {FLOWS.map((flow) => (
           <div key={flow.label}>
-            <div style={{
-              padding: '10px 12px 3px', fontSize: 9, fontFamily: 'Inter, system-ui, sans-serif',
-              color: '#4E6A80', textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>
+            <div
+              style={{
+                padding: "10px 12px 3px",
+                fontSize: 9,
+                fontFamily: "Inter, system-ui, sans-serif",
+
+                color: "#4E6A80",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
               {flow.label}
             </div>
             {flow.screens.map((s) => (
@@ -201,13 +366,26 @@ export default function App() {
                 key={s.id}
                 onClick={() => navigate(s.id as ScreenId)}
                 style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '5px 12px 5px 16px', fontSize: 11,
-                  color: screen === s.id ? '#fff' : '#7C93A6',
-                  backgroundColor: screen === s.id ? '#134E75' : 'transparent',
-                  border: 'none', cursor: 'pointer',
-                  borderLeft: screen === s.id ? '2px solid #A9BBC9' : '2px solid transparent',
-                  transition: 'all 0.1s',
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+
+                  padding: "5px 12px 5px 16px",
+                  fontSize: 11,
+
+                  color: screen === s.id ? "#fff" : "#7C93A6",
+
+                  backgroundColor: screen === s.id ? "#134E75" : "transparent",
+
+                  border: "none",
+                  cursor: "pointer",
+
+                  borderLeft:
+                    screen === s.id
+                      ? "2px solid #A9BBC9"
+                      : "2px solid transparent",
+
+                  transition: "all 0.1s",
                 }}
               >
                 {s.label}
@@ -216,9 +394,23 @@ export default function App() {
           </div>
         ))}
 
-        <div style={{ padding: '16px 12px', borderTop: '1px solid #155E8A', marginTop: 8 }}>
-          <div style={{ fontSize: 9, color: '#3A5468', fontFamily: 'Inter, system-ui, sans-serif', lineHeight: 1.5 }}>
-            ♿ Anotações de acessibilidade<br />
+        <div
+          style={{
+            padding: "16px 12px",
+            borderTop: "1px solid #155E8A",
+            marginTop: 8,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9,
+              color: "#3A5468",
+              fontFamily: "Inter, system-ui, sans-serif",
+              lineHeight: 1.5,
+            }}
+          >
+            ♿ Anotações de acessibilidade
+            <br />
             indicadas nas telas relevantes
           </div>
         </div>
@@ -231,10 +423,23 @@ export default function App() {
           onClick={() => setNavCollapsed(false)}
           aria-label="Expandir menu"
           style={{
-            position: 'fixed', top: 16, left: 8, zIndex: 20,
-            background: '#0F2A4A', border: '1px solid #155E8A', borderRadius: 6,
-            color: '#fff', fontSize: 14, width: 26, height: 26, cursor: 'pointer',
-            alignItems: 'center', justifyContent: 'center',
+            position: "fixed",
+            top: 16,
+            left: 8,
+            zIndex: 20,
+
+            background: "#0F2A4A",
+            border: "1px solid #155E8A",
+            borderRadius: 6,
+
+            color: "#fff",
+            fontSize: 14,
+            width: 26,
+            height: 26,
+            cursor: "pointer",
+
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           ›
@@ -242,13 +447,39 @@ export default function App() {
       )}
 
       {/* Fundo escurecido — clicar fora do menu também fecha (só existe em telas estreitas) */}
-      {navOpen && <div className="app-backdrop" onClick={() => setNavOpen(false)} />}
+      {navOpen && (
+        <div className="app-backdrop" onClick={() => setNavOpen(false)} />
+      )}
 
       {/* Main: página web comum, ocupando 100% do espaço, sem moldura de device */}
-      <main className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: 0, overflowY: 'auto' }}>
+      <main
+        className="app-main"
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "stretch",
+          padding: 0,
+          overflowY: "auto",
+        }}
+      >
         {/* Frame label — só visual de dev, pode remover se quiser 100% "produto" */}
-        <div style={{ padding: '8px 0', fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#5C7690', textAlign: 'center' }}>
-          <span style={{ backgroundColor: '#B9C8D4', padding: '2px 8px', borderRadius: 2 }}>
+        <div
+          style={{
+            padding: "8px 0",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: 11,
+            color: "#5C7690",
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              backgroundColor: "#B9C8D4",
+              padding: "2px 8px",
+              borderRadius: 2,
+            }}
+          >
             {currentLabel}
           </span>
         </div>
@@ -263,36 +494,71 @@ export default function App() {
         </MobilePage>
 
         {/* Quick-jump arrows */}
-        <div style={{ display: 'flex', gap: 8, padding: '16px 0', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            padding: "16px 0",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {(() => {
-            const all = FLOWS.flatMap(f => f.screens)
-            const idx = all.findIndex(s => s.id === screen)
+            const all = FLOWS.flatMap((f) => f.screens)
+
+            const idx = all.findIndex((s) => s.id === screen)
+
             const prev = idx > 0 ? all[idx - 1] : null
+
             const next = idx < all.length - 1 ? all[idx + 1] : null
+
             return (
               <>
                 <button
                   onClick={() => prev && navigate(prev.id as ScreenId)}
                   disabled={!prev}
                   style={{
-                    padding: '5px 12px', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif',
-                    backgroundColor: prev ? '#AFC2D1' : '#C6D5E0', color: prev ? '#16324F' : '#8CA1B2',
-                    border: '1px solid #8CA1B2', cursor: prev ? 'pointer' : 'default',
+                    padding: "5px 12px",
+                    fontSize: 11,
+                    fontFamily: "Inter, system-ui, sans-serif",
+
+                    backgroundColor: prev ? "#AFC2D1" : "#C6D5E0",
+                    color: prev ? "#16324F" : "#8CA1B2",
+
+                    border: "1px solid #8CA1B2",
+                    cursor: prev ? "pointer" : "default",
+
                     borderRadius: 2,
                   }}
                 >
                   ← Anterior
                 </button>
-                <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 10, color: '#66809A' }}>
-                  {FLOWS.flatMap(f => f.screens).findIndex(s => s.id === screen) + 1} / {FLOWS.flatMap(f => f.screens).length}
+                <span
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    fontSize: 10,
+                    color: "#66809A",
+                  }}
+                >
+                  {FLOWS.flatMap((f) => f.screens).findIndex(
+                    (s) => s.id === screen,
+                  ) + 1}{" "}
+                  / {FLOWS.flatMap((f) => f.screens).length}
                 </span>
                 <button
                   onClick={() => next && navigate(next.id as ScreenId)}
                   disabled={!next}
                   style={{
-                    padding: '5px 12px', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif',
-                    backgroundColor: next ? '#AFC2D1' : '#C6D5E0', color: next ? '#16324F' : '#8CA1B2',
-                    border: '1px solid #8CA1B2', cursor: next ? 'pointer' : 'default',
+                    padding: "5px 12px",
+                    fontSize: 11,
+                    fontFamily: "Inter, system-ui, sans-serif",
+
+                    backgroundColor: next ? "#AFC2D1" : "#C6D5E0",
+                    color: next ? "#16324F" : "#8CA1B2",
+
+                    border: "1px solid #8CA1B2",
+                    cursor: next ? "pointer" : "default",
+
                     borderRadius: 2,
                   }}
                 >
@@ -300,7 +566,7 @@ export default function App() {
                 </button>
               </>
             )
-            })()}
+          })()}
         </div>
       </main>
     </div>

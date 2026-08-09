@@ -1,78 +1,124 @@
-import { useState } from 'react'
-import type { Navigate } from '../App'
+import { useState } from "react"
+
+import type { Navigate } from "../App"
+
 import {
-  NavBar, Btn, Field, OptionItem, CheckboxItem,
-  SectionTitle, BodyText, Divider, A11yNote,
-  ScreenWrap, Content, ListRow,
-} from '../components/Wire'
+  NavBar,
+  Btn,
+  Field,
+  OptionItem,
+  CheckboxItem,
+  SectionTitle,
+  BodyText,
+  Divider,
+  A11yNote,
+  ScreenWrap,
+  Content,
+  ListRow,
+  AnswersSummary,
+} from "../components/Wire"
+
 import {
-  UserStorage, HistoryStorage, emptyUsuario, calcAge, formatMonthYear,
-  type Usuario, type TriageHistoryEntry,
-} from '../lib/storage'
-import { useTriage } from '../context/TriageContext'
-import { formatDateInput, formatPhoneInput } from '../lib/format'
+  UserStorage,
+  HistoryStorage,
+  emptyUsuario,
+  calcAge,
+  formatMonthYear,
+  type Usuario,
+  type TriageHistoryEntry,
+} from "../lib/storage"
+
+import { useTriage } from "../context/TriageContext"
+
+import { formatDateInput, formatPhoneInput } from "../lib/format"
 
 // ─── 9. Cadastro ──────────────────────────────────────────────────────────────
+
 // Portado da branch FrontEnd (index.html standalone): fluxo em 2 etapas
+
 // (dados pessoais → saúde/termos), com validação e persistência real.
 
 export function RegisterScreen({ navigate }: { navigate: Navigate }) {
   const [step, setStep] = useState<1 | 2>(1)
+
   const [form, setForm] = useState<Usuario>(emptyUsuario())
-  const [nomeError, setNomeError] = useState('')
-  const [telefoneError, setTelefoneError] = useState('')
-  const [emailError, setEmailError] = useState('')
-  const [senhaError, setSenhaError] = useState('')
+
+  const [nomeError, setNomeError] = useState("")
+
+  const [telefoneError, setTelefoneError] = useState("")
+
+  const [emailError, setEmailError] = useState("")
+
+  const [senhaError, setSenhaError] = useState("")
+
   const [termosError, setTermosError] = useState(false)
+
   // Aviso de e-mail/telefone já cadastrado — checado no step 1 (dados
+
   // pessoais), antes do usuário avançar para preencher alergias/saúde.
-  const [duplicateError, setDuplicateError] = useState('')
+
+  const [duplicateError, setDuplicateError] = useState("")
 
   const update = (key: keyof Usuario) => (value: string) =>
-    setForm(prev => ({ ...prev, [key]: value }))
+    setForm((prev) => ({ ...prev, [key]: value }))
 
   const handleGuest = () => {
     UserStorage.setGuest()
-    navigate('lgpd')
+
+    navigate("lgpd")
   }
 
   const validateStep1 = () => {
     let ok = true
+
     if (!form.nomeCompleto.trim()) {
-      setNomeError('Informe seu nome completo')
+      setNomeError("Informe seu nome completo")
+
       ok = false
     } else {
-      setNomeError('')
+      setNomeError("")
     }
+
     if (!form.telefone.trim()) {
-      setTelefoneError('Informe um telefone para contato')
+      setTelefoneError("Informe um telefone para contato")
+
       ok = false
     } else {
-      setTelefoneError('')
+      setTelefoneError("")
     }
+
     const emailTrimmed = form.email.trim()
+
     if (!emailTrimmed) {
-      setEmailError('Informe um e-mail para contato')
+      setEmailError("Informe um e-mail para contato")
+
       ok = false
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
-      setEmailError('Informe um e-mail válido')
+      setEmailError("Informe um e-mail válido")
+
       ok = false
     } else {
-      setEmailError('')
+      setEmailError("")
     }
+
     if (!form.senha.trim() || form.senha.length < 4) {
-      setSenhaError('Crie uma senha com pelo menos 4 caracteres')
+      setSenhaError("Crie uma senha com pelo menos 4 caracteres")
+
       ok = false
     } else {
-      setSenhaError('')
+      setSenhaError("")
     }
+
     const dup = UserStorage.checkDuplicate(form)
+
     if (!dup.ok) {
       setDuplicateError(dup.error)
+
       ok = false
     } else {
-      setDuplicateError('')
+      setDuplicateError("")
     }
+
     return ok
   }
 
@@ -83,19 +129,32 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
   const handleCriarConta = () => {
     if (!form.termosAceitos) {
       setTermosError(true)
+
       return
     }
+
     setTermosError(false)
-    const result = UserStorage.save({ ...form, contaCriadaEm: new Date().toISOString() })
+
+    const result = UserStorage.save({
+      ...form,
+      contaCriadaEm: new Date().toISOString(),
+    })
+
     if (!result.ok) {
       // Rede de segurança: já foi checado no step 1, mas cobre o caso raro
+
       // de a mesma conta ter sido criada em outra aba nesse meio-tempo.
+
       setDuplicateError(result.error)
+
       setStep(1)
+
       return
     }
-    setDuplicateError('')
-    navigate('lgpd')
+
+    setDuplicateError("")
+
+    navigate("lgpd")
   }
 
   if (step === 2) {
@@ -105,21 +164,38 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
         <Content>
           <SectionTitle>Saúde</SectionTitle>
           <Field
-            label="Alergias conhecidas" placeholder="Ex: Penicilina, dipirona, amendoim..." hint="Deixe em branco se não houver"
-            value={form.alergias} onChange={update('alergias')}
+            label="Alergias conhecidas"
+            placeholder="Ex: Penicilina, dipirona, amendoim..."
+            hint="Deixe em branco se não houver"
+            value={form.alergias}
+            onChange={update("alergias")}
           />
           <Field
-            label="Comorbidades / doenças crônicas" placeholder="Ex: Diabetes tipo 2, hipertensão, asma..." hint="Deixe em branco se não houver"
-            value={form.comorbidades} onChange={update('comorbidades')}
+            label="Comorbidades / doenças crônicas"
+            placeholder="Ex: Diabetes tipo 2, hipertensão, asma..."
+            hint="Deixe em branco se não houver"
+            value={form.comorbidades}
+            onChange={update("comorbidades")}
           />
           <Field
-            label="Medicamentos de uso contínuo" placeholder="Ex: Metformina 850mg, losartana 50mg..." hint="Deixe em branco se não houver"
-            value={form.medicamentos} onChange={update('medicamentos')}
+            label="Medicamentos de uso contínuo"
+            placeholder="Ex: Metformina 850mg, losartana 50mg..."
+            hint="Deixe em branco se não houver"
+            value={form.medicamentos}
+            onChange={update("medicamentos")}
           />
 
           <Divider />
 
-          <div onClick={() => setForm(prev => ({ ...prev, termosAceitos: !prev.termosAceitos }))} style={{ cursor: 'pointer', marginBottom: 4 }}>
+          <div
+            onClick={() =>
+              setForm((prev) => ({
+                ...prev,
+                termosAceitos: !prev.termosAceitos,
+              }))
+            }
+            style={{ cursor: "pointer", marginBottom: 4 }}
+          >
             <CheckboxItem
               label="Concordo com os Termos de Uso e Política de Privacidade (LGPD)"
               checked={form.termosAceitos}
@@ -127,31 +203,61 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
             />
           </div>
           {termosError && (
-            <div style={{ fontSize: 11, color: '#DC2626', marginBottom: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#DC2626",
+                marginBottom: 12,
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
               ⚠ É preciso aceitar os termos para continuar
             </div>
           )}
 
-         <div
-           onClick={() => setForm(prev => ({ ...prev, receberNotificacoes: !prev.receberNotificacoes }))}
-           style={{ cursor: 'pointer', marginTop: 8 }}
-         >
-           <CheckboxItem
-             label="Desejo receber notificações do Triagem+ (ex: status da fila, lembretes)"
-             checked={form.receberNotificacoes}
-             note="Opcional"
-           />
-         </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-            <Btn label="Criar conta" onClick={handleCriarConta} variant="primary" />
-            <Btn label="Continuar sem cadastro" onClick={handleGuest} variant="ghost" />
+          <div
+            onClick={() =>
+              setForm((prev) => ({
+                ...prev,
+                receberNotificacoes: !prev.receberNotificacoes,
+              }))
+            }
+            style={{ cursor: "pointer", marginTop: 8 }}
+          >
+            <CheckboxItem
+              label="Desejo receber notificações do Triagem+ (ex: status da fila, lembretes)"
+              checked={form.receberNotificacoes}
+              note="Opcional"
+            />
           </div>
 
-          <A11yNote notes={[
-            'Campos com labels explícitas — sem placeholder como único rótulo',
-            'Erros de validação exibidos abaixo do campo com ícone e texto',
-          ]} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              marginTop: 12,
+            }}
+          >
+            <Btn
+              label="Criar conta"
+              onClick={handleCriarConta}
+              variant="primary"
+            />
+            <Btn
+              label="Continuar sem cadastro"
+              onClick={handleGuest}
+              variant="ghost"
+            />
+          </div>
+
+          <A11yNote
+            notes={[
+              "Campos com labels explícitas — sem placeholder como único rótulo",
+
+              "Erros de validação exibidos abaixo do campo com ícone e texto",
+            ]}
+          />
         </Content>
       </ScreenWrap>
     )
@@ -159,58 +265,113 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
 
   return (
     <ScreenWrap>
-      <NavBar title="Criar Conta" onBack={() => navigate('home')} />
+      <NavBar title="Criar Conta" onBack={() => navigate("home")} />
       <Content>
-        <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 16, backgroundColor: '#EFF5F9', padding: '8px 10px', borderRadius: 6 }}>
-          ℹ Cadastro opcional. Permite salvar histórico e pré-preencher triagens futuras.
+        <div
+          style={{
+            fontSize: 12,
+            color: "#7C93A6",
+            marginBottom: 16,
+            backgroundColor: "#EFF5F9",
+            padding: "8px 10px",
+            borderRadius: 6,
+          }}
+        >
+          ℹ Cadastro opcional. Permite salvar histórico e pré-preencher triagens
+          futuras.
         </div>
 
         <SectionTitle>Dados Pessoais</SectionTitle>
         <Field
-          label="Nome completo" placeholder="Ex: Maria Aparecida Silva" required
-          value={form.nomeCompleto} onChange={update('nomeCompleto')} error={nomeError}
+          label="Nome completo"
+          placeholder="Ex: Maria Aparecida Silva"
+          required
+          value={form.nomeCompleto}
+          onChange={update("nomeCompleto")}
+          error={nomeError}
         />
         <Field
-          label="Data de nascimento" placeholder="DD/MM/AAAA"
+          label="Data de nascimento"
+          placeholder="DD/MM/AAAA"
           value={form.dataNascimento}
-          onChange={(v) => update('dataNascimento')(formatDateInput(v))}
+          onChange={(v) => update("dataNascimento")(formatDateInput(v))}
         />
         <Field
-          label="Telefone" placeholder="(11) 90000-0000" hint="Para receber confirmações" required type="tel"
+          label="Telefone"
+          placeholder="(11) 90000-0000"
+          hint="Para receber confirmações"
+          required
+          type="tel"
           value={form.telefone}
-          onChange={(v) => update('telefone')(formatPhoneInput(v))}
+          onChange={(v) => update("telefone")(formatPhoneInput(v))}
           error={telefoneError}
         />
         <Field
-           label="Senha" placeholder="Mínimo 4 caracteres" required
-           value={form.senha} onChange={update('senha')} error={senhaError}
-         />
+          label="Senha"
+          placeholder="Mínimo 4 caracteres"
+          required
+          value={form.senha}
+          onChange={update("senha")}
+          error={senhaError}
+        />
         <Field
-          label="E-mail" placeholder="nome@email.com" required type="email"
-          value={form.email} onChange={update('email')} error={emailError}
+          label="E-mail"
+          placeholder="nome@email.com"
+          required
+          type="email"
+          value={form.email}
+          onChange={update("email")}
+          error={emailError}
         />
 
         {duplicateError && (
-          <div style={{ fontSize: 11, color: '#DC2626', marginBottom: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#DC2626",
+              marginBottom: 12,
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}
+          >
             ⚠ {duplicateError}
           </div>
         )}
 
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#4E6A80', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#4E6A80",
+              marginBottom: 6,
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}
+          >
             SEXO BIOLÓGICO
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['Feminino', 'Masculino', 'Outro'].map(s => (
+          <div style={{ display: "flex", gap: 8 }}>
+            {["Feminino", "Masculino", "Outro"].map((s) => (
               <button
                 key={s}
-                onClick={() => setForm(prev => ({ ...prev, sexoBiologico: s }))}
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, sexoBiologico: s }))
+                }
                 style={{
-                  flex: 1, padding: '8px 4px', border: '1.5px solid',
-                  borderColor: form.sexoBiologico === s ? '#3A5468' : '#C6D5E0',
-                  borderRadius: 6, backgroundColor: form.sexoBiologico === s ? '#EAF2F6' : '#fff',
-                  fontSize: 11, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-                  color: '#155E8A',
+                  flex: 1,
+                  padding: "8px 4px",
+                  border: "1.5px solid",
+
+                  borderColor: form.sexoBiologico === s ? "#3A5468" : "#C6D5E0",
+
+                  borderRadius: 6,
+                  backgroundColor:
+                    form.sexoBiologico === s ? "#EAF2F6" : "#fff",
+
+                  fontSize: 11,
+                  cursor: "pointer",
+                  fontFamily: "Inter, system-ui, sans-serif",
+
+                  color: "#155E8A",
                 }}
               >
                 {s}
@@ -220,34 +381,64 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
         </div>
 
         <Field
-          label="Cidade / Bairro" placeholder="Ex: São Paulo — Vila Mariana"
-          value={form.cidadeBairro} onChange={update('cidadeBairro')}
+          label="Cidade / Bairro"
+          placeholder="Ex: São Paulo — Vila Mariana"
+          value={form.cidadeBairro}
+          onChange={update("cidadeBairro")}
         />
 
         <Divider />
         <SectionTitle>Plano de Saúde</SectionTitle>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <OptionItem label="Sim" selected={form.possuiPlano === 'Sim'} onClick={() => setForm(prev => ({ ...prev, possuiPlano: 'Sim' }))} />
-            <OptionItem label="Não" selected={form.possuiPlano === 'Não'} onClick={() => setForm(prev => ({ ...prev, possuiPlano: 'Não' }))} />
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <OptionItem
+              label="Sim"
+              selected={form.possuiPlano === "Sim"}
+              onClick={() =>
+                setForm((prev) => ({ ...prev, possuiPlano: "Sim" }))
+              }
+            />
+            <OptionItem
+              label="Não"
+              selected={form.possuiPlano === "Não"}
+              onClick={() =>
+                setForm((prev) => ({ ...prev, possuiPlano: "Não" }))
+              }
+            />
           </div>
-          {form.possuiPlano === 'Sim' && (
+          {form.possuiPlano === "Sim" && (
             <Field
-              label="Qual plano?" placeholder="Ex: Unimed, Bradesco Saúde, Amil..."
-              value={form.nomePlano} onChange={update('nomePlano')}
+              label="Qual plano?"
+              placeholder="Ex: Unimed, Bradesco Saúde, Amil..."
+              value={form.nomePlano}
+              onChange={update("nomePlano")}
             />
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            marginTop: 8,
+          }}
+        >
           <Btn label="Continuar" onClick={handleContinue} variant="primary" />
-          <Btn label="Continuar sem cadastro" onClick={handleGuest} variant="ghost" />
+          <Btn
+            label="Continuar sem cadastro"
+            onClick={handleGuest}
+            variant="ghost"
+          />
         </div>
 
-        <A11yNote notes={[
-          'Campos com labels explícitas — sem placeholder como único rótulo',
-          'Erros de validação exibidos abaixo do campo com ícone e texto',
-        ]} />
+        <A11yNote
+          notes={[
+            "Campos com labels explícitas — sem placeholder como único rótulo",
+
+            "Erros de validação exibidos abaixo do campo com ícone e texto",
+          ]}
+        />
       </Content>
     </ScreenWrap>
   )
@@ -257,74 +448,105 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
 
 export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   const [saved, setSaved] = useState<Usuario | null>(() =>
-    UserStorage.isLoggedIn() ? UserStorage.get() : null
-)
+    UserStorage.isLoggedIn() ? UserStorage.get() : null,
+  )
+
   const [editing, setEditing] = useState(false)
+
   const [form, setForm] = useState<Usuario | null>(saved)
+
   const [justSaved, setJustSaved] = useState(false)
-  const [saveError, setSaveError] = useState('')
-  const [currentPassword, setCurrentPassword] = useState('')
+
+  const [saveError, setSaveError] = useState("")
+
+  const [currentPassword, setCurrentPassword] = useState("")
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   const { resetAnswers } = useTriage()
 
   const update = (key: keyof Usuario) => (value: string) =>
-    setForm(prev => (prev ? { ...prev, [key]: value } : prev))
+    setForm((prev) => (prev ? { ...prev, [key]: value } : prev))
 
   const startEdit = () => {
     setForm(saved)
-    setCurrentPassword('')
-    setSaveError('')
+
+    setCurrentPassword("")
+
+    setSaveError("")
+
     setEditing(true)
   }
 
   const handleSave = () => {
     if (!form) return
+
     if (currentPassword !== saved?.senha) {
-      setSaveError('Senha atual incorreta.')
+      setSaveError("Senha atual incorreta.")
+
       return
     }
+
     const result = UserStorage.save(form)
+
     if (!result.ok) {
       setSaveError(result.error)
+
       return
     }
-    setSaveError('')
-    setCurrentPassword('')
+
+    setSaveError("")
+
+    setCurrentPassword("")
+
     setSaved(form)
+
     setEditing(false)
+
     setJustSaved(true)
+
     setTimeout(() => setJustSaved(false), 2000)
   }
 
   const handleLogout = () => {
     UserStorage.logout()
-    navigate('home')
+
+    navigate("home")
   }
 
   const handleDeleteAccount = () => {
     UserStorage.deleteAccount()
+
     setShowDeleteConfirm(false)
-    navigate('home')
+
+    navigate("home")
   }
 
   const startNewTriage = () => {
     resetAnswers()
-    navigate('q1')
+
+    navigate("q1")
   }
 
   // Sem conta salva (uso anônimo) — convida a criar conta.
+
   if (!saved) {
     return (
       <ScreenWrap>
-        <NavBar title="Meu Perfil" onBack={() => navigate('home')} />
+        <NavBar title="Meu Perfil" onBack={() => navigate("home")} />
         <Content>
-          <div style={{ textAlign: 'center', paddingTop: 48 }}>
+          <div style={{ textAlign: "center", paddingTop: 48 }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👤</div>
             <BodyText>
-              Você está usando o app sem cadastro. Seus dados de triagem não serão salvos para a próxima visita.
+              Você está usando o app sem cadastro. Seus dados de triagem não
+              serão salvos para a próxima visita.
             </BodyText>
             <div style={{ marginTop: 16 }}>
-              <Btn label="Criar conta agora" onClick={() => navigate('register')} variant="primary" />
+              <Btn
+                label="Criar conta agora"
+                onClick={() => navigate("register")}
+                variant="primary"
+              />
             </div>
           </div>
         </Content>
@@ -333,84 +555,180 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
   }
 
   const idade = saved.dataNascimento ? calcAge(saved.dataNascimento) : null
-  const criadoEm = saved.contaCriadaEm ? formatMonthYear(saved.contaCriadaEm) : '—'
+
+  const criadoEm = saved.contaCriadaEm
+    ? formatMonthYear(saved.contaCriadaEm)
+    : "—"
 
   return (
     <ScreenWrap>
       <NavBar
         title="Meu Perfil"
-        onBack={() => navigate('home')}
+        onBack={() => navigate("home")}
         right={
           <button
             onClick={() => (editing ? handleSave() : startEdit())}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif' }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 11,
+              color: "#4E6A80",
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}
           >
-            {editing ? 'Salvar' : 'Editar'}
+            {editing ? "Salvar" : "Editar"}
           </button>
         }
       />
       <Content>
         {justSaved && (
-          <div style={{
-            backgroundColor: '#f0fdf4', border: '1.5px solid #16a34a',
-            borderRadius: 6, padding: '8px 12px', marginBottom: 12,
-            fontSize: 12, color: '#15803d', textAlign: 'center',
-          }}>
+          <div
+            style={{
+              backgroundColor: "#f0fdf4",
+              border: "1.5px solid #16a34a",
+
+              borderRadius: 6,
+              padding: "8px 12px",
+              marginBottom: 12,
+
+              fontSize: 12,
+              color: "#15803d",
+              textAlign: "center",
+            }}
+          >
             ✓ Alterações salvas
           </div>
         )}
 
         {/* Avatar placeholder */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-          <div style={{
-            width: 60, height: 60, borderRadius: '50%', backgroundColor: '#D7E3EC',
-            border: '2px solid #C6D5E0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24, color: '#8CA1B2',
-          }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: "50%",
+              backgroundColor: "#D7E3EC",
+
+              border: "2px solid #C6D5E0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+
+              fontSize: 24,
+              color: "#8CA1B2",
+            }}
+          >
             👤
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#0F2A4A' }}>{saved.nomeCompleto || 'Sem nome'}</div>
-            <div style={{ fontSize: 12, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>Conta criada em {criadoEm}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F2A4A" }}>
+              {saved.nomeCompleto || "Sem nome"}
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#7C93A6",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              Conta criada em {criadoEm}
+            </div>
           </div>
         </div>
 
         <SectionTitle>Dados Pessoais</SectionTitle>
         {editing && form ? (
           <>
-            <Field label="Nome completo" value={form.nomeCompleto} onChange={update('nomeCompleto')} />
-           <Field
-             label="Data de nascimento" placeholder="DD/MM/AAAA"
-             value={form.dataNascimento}
-             onChange={(v) => update('dataNascimento')(formatDateInput(v))}
-           />
-           <Field
-             label="Telefone" type="tel" placeholder="(11) 90000-0000"
-             value={form.telefone}
-             onChange={(v) => update('telefone')(formatPhoneInput(v))}
-           />
-            <Field label="E-mail" type="email" value={form.email} onChange={update('email')} />
-            <Field label="Cidade / Bairro" value={form.cidadeBairro} onChange={update('cidadeBairro')} />
+            <Field
+              label="Nome completo"
+              value={form.nomeCompleto}
+              onChange={update("nomeCompleto")}
+            />
+            <Field
+              label="Data de nascimento"
+              placeholder="DD/MM/AAAA"
+              value={form.dataNascimento}
+              onChange={(v) => update("dataNascimento")(formatDateInput(v))}
+            />
+            <Field
+              label="Telefone"
+              type="tel"
+              placeholder="(11) 90000-0000"
+              value={form.telefone}
+              onChange={(v) => update("telefone")(formatPhoneInput(v))}
+            />
+            <Field
+              label="E-mail"
+              type="email"
+              value={form.email}
+              onChange={update("email")}
+            />
+            <Field
+              label="Cidade / Bairro"
+              value={form.cidadeBairro}
+              onChange={update("cidadeBairro")}
+            />
           </>
         ) : (
-          <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+          <div
+            style={{
+              backgroundColor: "#F5F9FB",
+              border: "1px solid #E3EDF3",
+              borderRadius: 8,
+              overflow: "hidden",
+              marginBottom: 14,
+            }}
+          >
             {[
-              { label: 'Nome', value: saved.nomeCompleto || '—' },
-              { label: 'Nascimento', value: saved.dataNascimento ? `${saved.dataNascimento}${idade !== null ? ` · ${idade} anos` : ''}` : '—' },
-              { label: 'Sexo', value: saved.sexoBiologico || '—' },
-              { label: 'Telefone', value: saved.telefone || '—' },
-              { label: 'E-mail', value: saved.email || '—' },
-              { label: 'Bairro', value: saved.cidadeBairro || '—' },
+              { label: "Nome", value: saved.nomeCompleto || "—" },
+
+              {
+                label: "Nascimento",
+                value: saved.dataNascimento
+                  ? `${saved.dataNascimento}${
+                      idade !== null ? ` · ${idade} anos` : ""
+                    }`
+                  : "—",
+              },
+
+              { label: "Sexo", value: saved.sexoBiologico || "—" },
+
+              { label: "Telefone", value: saved.telefone || "—" },
+
+              { label: "E-mail", value: saved.email || "—" },
+
+              { label: "Bairro", value: saved.cidadeBairro || "—" },
             ].map(({ label, value }, i, arr) => (
               <div
                 key={label}
                 style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 12px', borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none',
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+
+                  padding: "10px 12px",
+                  borderBottom:
+                    i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
                 }}
               >
-                <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>{label}</span>
-                <span style={{ fontSize: 13, color: '#16324F' }}>{value}</span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "#7C93A6",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  {label}
+                </span>
+                <span style={{ fontSize: 13, color: "#16324F" }}>{value}</span>
               </div>
             ))}
           </div>
@@ -420,27 +738,84 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         <SectionTitle>Saúde</SectionTitle>
         {editing && form ? (
           <>
-            <Field label="Alergias conhecidas" value={form.alergias} onChange={update('alergias')} />
-            <Field label="Comorbidades / doenças crônicas" value={form.comorbidades} onChange={update('comorbidades')} />
-            <Field label="Medicamentos de uso contínuo" value={form.medicamentos} onChange={update('medicamentos')} />
+            <Field
+              label="Alergias conhecidas"
+              value={form.alergias}
+              onChange={update("alergias")}
+            />
+            <Field
+              label="Comorbidades / doenças crônicas"
+              value={form.comorbidades}
+              onChange={update("comorbidades")}
+            />
+            <Field
+              label="Medicamentos de uso contínuo"
+              value={form.medicamentos}
+              onChange={update("medicamentos")}
+            />
           </>
         ) : (
-          <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
+          <div
+            style={{
+              backgroundColor: "#F5F9FB",
+              border: "1px solid #E3EDF3",
+              borderRadius: 8,
+              overflow: "hidden",
+              marginBottom: 14,
+            }}
+          >
             {[
-              { label: 'Plano de saúde', value: saved.possuiPlano === 'Sim' ? (saved.nomePlano || 'Sim') : 'Não informado' },
-              { label: 'Alergias', value: saved.alergias || 'Nenhuma informada' },
-              { label: 'Comorbidades', value: saved.comorbidades || 'Nenhuma informada' },
-              { label: 'Medicamentos', value: saved.medicamentos || 'Nenhum informado' },
+              {
+                label: "Plano de saúde",
+                value:
+                  saved.possuiPlano === "Sim"
+                    ? saved.nomePlano || "Sim"
+                    : "Não informado",
+              },
+
+              {
+                label: "Alergias",
+                value: saved.alergias || "Nenhuma informada",
+              },
+
+              {
+                label: "Comorbidades",
+                value: saved.comorbidades || "Nenhuma informada",
+              },
+
+              {
+                label: "Medicamentos",
+                value: saved.medicamentos || "Nenhum informado",
+              },
             ].map(({ label, value }, i, arr) => (
               <div
                 key={label}
                 style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                  padding: '10px 12px', borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none', gap: 12,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+
+                  padding: "10px 12px",
+                  borderBottom:
+                    i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
+                  gap: 12,
                 }}
               >
-                <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
-                <span style={{ fontSize: 12, color: '#16324F', textAlign: 'right' }}>{value}</span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "#7C93A6",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    flexShrink: 0,
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{ fontSize: 12, color: "#16324F", textAlign: "right" }}
+                >
+                  {value}
+                </span>
               </div>
             ))}
           </div>
@@ -449,29 +824,54 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
         <Divider />
 
         {editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <Field
-              label="Senha atual" placeholder="Confirme sua senha para salvar"
-              value={currentPassword} onChange={setCurrentPassword}
+              label="Senha atual"
+              placeholder="Confirme sua senha para salvar"
+              value={currentPassword}
+              onChange={setCurrentPassword}
               error={saveError || undefined}
             />
-           
-            <Btn label="Salvar alterações" onClick={handleSave} variant="primary" />
-            <Btn label="Cancelar" onClick={() => setEditing(false)} variant="ghost" />
+
+            <Btn
+              label="Salvar alterações"
+              onClick={handleSave}
+              variant="primary"
+            />
+            <Btn
+              label="Cancelar"
+              onClick={() => setEditing(false)}
+              variant="ghost"
+            />
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Btn label="Ver histórico de triagens" onClick={() => navigate('history')} variant="secondary" />
-            <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <Btn
+              label="Ver histórico de triagens"
+              onClick={() => navigate("history")}
+              variant="secondary"
+            />
+            <Btn
+              label="Iniciar nova triagem"
+              onClick={startNewTriage}
+              variant="primary"
+            />
             <Btn label="Sair da conta" onClick={handleLogout} variant="ghost" />
-            <Btn label="Excluir conta" onClick={() => setShowDeleteConfirm(true)} variant="danger" />
+            <Btn
+              label="Excluir conta"
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="danger"
+            />
           </div>
         )}
 
-        <A11yNote notes={[
-          'Modo de edição com feedback visual claro (border ativo nos campos)',
-          'Dados sensíveis de saúde com campo "Visibilidade" para ocultar em tela',
-        ]} />
+        <A11yNote
+          notes={[
+            "Modo de edição com feedback visual claro (border ativo nos campos)",
+
+            'Dados sensíveis de saúde com campo "Visibilidade" para ocultar em tela',
+          ]}
+        />
       </Content>
 
       {showDeleteConfirm && (
@@ -480,25 +880,62 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
           aria-modal="true"
           aria-label="Confirmar exclusão de conta"
           style={{
-            position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 42, 74, 0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20, zIndex: 50,
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 42, 74, 0.55)",
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            padding: 20,
+            zIndex: 50,
           }}
         >
-          <div style={{
-            backgroundColor: '#fff', borderRadius: 12, padding: '18px 18px 16px',
-            width: '100%', maxWidth: 360,
-            boxShadow: '0 20px 40px rgba(15,42,74,0.3)',
-          }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#0F2A4A', marginBottom: 4 }}>
+          <div
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: "18px 18px 16px",
+
+              width: "100%",
+              maxWidth: 360,
+
+              boxShadow: "0 20px 40px rgba(15,42,74,0.3)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 800,
+                color: "#0F2A4A",
+                marginBottom: 4,
+              }}
+            >
               Excluir conta permanentemente?
             </div>
-            <div style={{ fontSize: 12, color: '#3A5468', marginBottom: 16, lineHeight: 1.5 }}>
-              Isso vai apagar sua conta e todo o seu histórico de triagens. Essa ação não pode ser desfeita.
+            <div
+              style={{
+                fontSize: 12,
+                color: "#3A5468",
+                marginBottom: 16,
+                lineHeight: 1.5,
+              }}
+            >
+              Isso vai apagar sua conta e todo o seu histórico de triagens. Essa
+              ação não pode ser desfeita.
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Btn label="Sim, excluir minha conta" onClick={handleDeleteAccount} variant="danger" />
-              <Btn label="Cancelar" onClick={() => setShowDeleteConfirm(false)} variant="ghost" />
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <Btn
+                label="Sim, excluir minha conta"
+                onClick={handleDeleteAccount}
+                variant="danger"
+              />
+              <Btn
+                label="Cancelar"
+                onClick={() => setShowDeleteConfirm(false)}
+                variant="ghost"
+              />
             </div>
           </div>
         </div>
@@ -508,86 +945,180 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 }
 
 // ─── 11. Histórico de Triagens ────────────────────────────────────────────────
+
 // Antes usava uma lista fixa de exemplo (HISTORY_ITEMS). Agora lê o
+
 // histórico real gravado pelo ResultScreen (Flow2.tsx) via HistoryStorage —
+
 // só existe registro aqui quando a triagem foi concluída com uma conta
+
 // criada. Uso anônimo continua funcionando normalmente, só não fica salvo.
 
 const RISK_COLORS: Record<string, string> = {
-  Emergência: '#dc2626', UPA: '#ea580c', Prioritário: '#ca8a04',
-  UBS: '#16a34a',
+  Emergência: "#dc2626",
+  UPA: "#ea580c",
+  Prioritário: "#ca8a04",
+
+  UBS: "#16a34a",
 }
 
-const MONTH_ABBR = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ']
+const MONTH_ABBR = [
+  "JAN",
+  "FEV",
+  "MAR",
+  "ABR",
+  "MAI",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SET",
+  "OUT",
+  "NOV",
+  "DEZ",
+]
 
 export function HistoryScreen({ navigate }: { navigate: Navigate }) {
   const account = UserStorage.get()
+
   const [items] = useState<TriageHistoryEntry[]>(() =>
-    account ? HistoryStorage.getAll(account.id) : []
+    account ? HistoryStorage.getAll(account.id) : [],
   )
+
   const [selectedId, setSelectedId] = useState<string | null>(null)
+
   const { resetAnswers } = useTriage()
 
   const startNewTriage = () => {
     resetAnswers()
-    navigate('q1')
+
+    navigate("q1")
   }
 
-  const selectedItem = items.find(h => h.id === selectedId) ?? null
+  const selectedItem = items.find((h) => h.id === selectedId) ?? null
 
   return (
     <ScreenWrap>
-      <NavBar title="Histórico de Triagens" onBack={() => navigate('profile')} />
+      <NavBar
+        title="Histórico de Triagens"
+        onBack={() => navigate("profile")}
+      />
       <Content>
         {selectedItem ? (
-          <HistoryDetail item={selectedItem} onBack={() => setSelectedId(null)} navigate={navigate} />
+          <HistoryDetail
+            item={selectedItem}
+            onBack={() => setSelectedId(null)}
+            navigate={navigate}
+          />
         ) : items.length === 0 ? (
           // Nenhuma triagem registrada ainda
-          <div style={{ textAlign: 'center', paddingTop: 48 }}>
+
+          <div style={{ textAlign: "center", paddingTop: 48 }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
             <BodyText>
-              Você ainda não tem nenhuma triagem registrada. Suas próximas triagens vão aparecer aqui.
+              Você ainda não tem nenhuma triagem registrada. Suas próximas
+              triagens vão aparecer aqui.
             </BodyText>
             <div style={{ marginTop: 16 }}>
-              <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
+              <Btn
+                label="Iniciar nova triagem"
+                onClick={startNewTriage}
+                variant="primary"
+              />
             </div>
           </div>
         ) : (
           // Lista real de triagens
+
           <>
-            <div style={{ fontSize: 12, color: '#7C93A6', marginBottom: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>
-              {items.length} {items.length === 1 ? 'triagem realizada' : 'triagens realizadas'}
+            <div
+              style={{
+                fontSize: 12,
+                color: "#7C93A6",
+                marginBottom: 14,
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              {items.length}{" "}
+              {items.length === 1 ? "triagem realizada" : "triagens realizadas"}
             </div>
 
-            {items.map(item => (
+            {items.map((item) => (
               <ListRow key={item.id} onClick={() => setSelectedId(item.id)}>
                 {/* Date badge */}
-                <div style={{
-                  width: 44, height: 44, borderRadius: 8, backgroundColor: '#EAF2F6',
-                  border: '1px solid #DCE7EF', display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#155E8A', lineHeight: 1 }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 8,
+                    backgroundColor: "#EAF2F6",
+
+                    border: "1px solid #DCE7EF",
+                    display: "flex",
+                    flexDirection: "column",
+
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "#155E8A",
+                      lineHeight: 1,
+                    }}
+                  >
                     {item.date.slice(0, 2)}
                   </div>
-                  <div style={{ fontSize: 9, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {MONTH_ABBR[parseInt(item.date.slice(3, 5)) - 1] ?? ''}
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#7C93A6",
+                      fontFamily: "Inter, system-ui, sans-serif",
+                    }}
+                  >
+                    {MONTH_ABBR[parseInt(item.date.slice(3, 5)) - 1] ?? ""}
                   </div>
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#0F2A4A', marginBottom: 3 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#0F2A4A",
+                      marginBottom: 3,
+                    }}
+                  >
                     {item.symptom}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif',
-                      color: '#fff', backgroundColor: RISK_COLORS[item.classification] || '#4E6A80',
-                      borderRadius: 4, padding: '1px 6px',
-                    }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        fontFamily: "Inter, system-ui, sans-serif",
+
+                        color: "#fff",
+                        backgroundColor:
+                          RISK_COLORS[item.classification] || "#4E6A80",
+
+                        borderRadius: 4,
+                        padding: "1px 6px",
+                      }}
+                    >
                       {item.classification}
                     </span>
-                    <span style={{ fontSize: 10, color: '#9AAEBE', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: "#9AAEBE",
+                        fontFamily: "Inter, system-ui, sans-serif",
+                      }}
+                    >
                       {item.date}
                     </span>
                   </div>
@@ -596,13 +1127,20 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
             ))}
 
             <div style={{ marginTop: 16 }}>
-              <Btn label="Iniciar nova triagem" onClick={startNewTriage} variant="primary" />
+              <Btn
+                label="Iniciar nova triagem"
+                onClick={startNewTriage}
+                variant="primary"
+              />
             </div>
 
-            <A11yNote notes={[
-              'Histórico com datas explícitas (não só "há 3 dias")',
-              'Classificação comunicada por cor E texto',
-            ]} />
+            <A11yNote
+              notes={[
+                'Histórico com datas explícitas (não só "há 3 dias")',
+
+                "Classificação comunicada por cor E texto",
+              ]}
+            />
           </>
         )}
       </Content>
@@ -610,116 +1148,171 @@ export function HistoryScreen({ navigate }: { navigate: Navigate }) {
   )
 }
 
-function HistoryDetail({ item, onBack, navigate }: {
+function HistoryDetail({
+  item,
+  onBack,
+  navigate,
+}: {
   item: TriageHistoryEntry
+
   onBack: () => void
+
   navigate: Navigate
 }) {
   const { resetAnswers } = useTriage()
 
   const redoTriage = () => {
     resetAnswers()
-    navigate('q1')
-  }
 
-  const yesNoLabel = (v: 'sim' | 'nao' | null) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : '—')
+    navigate("q1")
+  }
 
   return (
     <>
-      <button onClick={onBack} style={{
-        background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
-        color: '#4E6A80', fontFamily: 'Inter, system-ui, sans-serif', marginBottom: 14, padding: 0,
-        display: 'flex', alignItems: 'center', gap: 4,
-      }}>
+      <button
+        onClick={onBack}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: 13,
+
+          color: "#4E6A80",
+          fontFamily: "Inter, system-ui, sans-serif",
+          marginBottom: 14,
+          padding: 0,
+
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
         ← Voltar ao histórico
       </button>
 
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#0F2A4A', marginBottom: 4 }}>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#0F2A4A",
+          marginBottom: 4,
+        }}
+      >
         Triagem de {item.date}
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <span style={{
-          fontSize: 11, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif', color: '#fff',
-          backgroundColor: RISK_COLORS[item.classification] || '#4E6A80',
-          borderRadius: 4, padding: '2px 8px',
-        }}>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            fontFamily: "Inter, system-ui, sans-serif",
+            color: "#fff",
+
+            backgroundColor: RISK_COLORS[item.classification] || "#4E6A80",
+
+            borderRadius: 4,
+            padding: "2px 8px",
+          }}
+        >
           {item.classification}
         </span>
       </div>
 
       <Divider />
       <SectionTitle>Por que essa classificação?</SectionTitle>
-      <div style={{ backgroundColor: '#EFF5F9', border: '1px solid #DCE7EF', borderRadius: 6, padding: '10px 12px', marginBottom: 14 }}>
+      <div
+        style={{
+          backgroundColor: "#EFF5F9",
+          border: "1px solid #DCE7EF",
+          borderRadius: 6,
+          padding: "10px 12px",
+          marginBottom: 14,
+        }}
+      >
         {item.reasons.map((reason, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: i < item.reasons.length - 1 ? 6 : 0 }}>
-            <span style={{ color: '#155E8A', fontSize: 12, flexShrink: 0 }}>●</span>
-            <span style={{ fontSize: 12, color: '#3A5468', lineHeight: 1.4 }}>{reason}</span>
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 6,
+              marginBottom: i < item.reasons.length - 1 ? 6 : 0,
+            }}
+          >
+            <span style={{ color: "#155E8A", fontSize: 12, flexShrink: 0 }}>
+              ●
+            </span>
+            <span style={{ fontSize: 12, color: "#3A5468", lineHeight: 1.4 }}>
+              {reason}
+            </span>
           </div>
         ))}
       </div>
 
       <SectionTitle>Respostas Registradas</SectionTitle>
-      <div style={{ backgroundColor: '#F5F9FB', border: '1px solid #E3EDF3', borderRadius: 8, overflow: 'hidden', marginBottom: 14 }}>
-        {[
-          { label: 'Sintoma', value: item.answers.symptom || item.answers.symptomOther || '—' },
-          { label: 'Duração', value: item.answers.duration || '—' },
-          { label: 'Febre', value: yesNoLabel(item.answers.fever) },
-          { label: 'Dor intensa', value: yesNoLabel(item.answers.intensePain) },
-          { label: 'Falta de ar', value: yesNoLabel(item.answers.breathingDifficulty) },
-          { label: 'Piora rápida', value: yesNoLabel(item.answers.rapidWorsening) },
-          { label: 'Grupo de risco', value: item.answers.vulnerableGroups.length ? item.answers.vulnerableGroups.join(', ') : 'Nenhum' },
-          {
-            label: 'Medicamentos',
-            value: item.answers.usingMedication === 'sim'
-              ? (item.answers.medicationDetails || 'Sim (não especificado)')
-              : yesNoLabel(item.answers.usingMedication),
-          },
-        ].map(({ label, value }, i, arr) => (
-          <div key={label} style={{
-            display: 'flex', justifyContent: 'space-between', padding: '8px 12px',
-            borderBottom: i < arr.length - 1 ? '1px solid #EAF2F6' : 'none', gap: 12,
-          }}>
-            <span style={{ fontSize: 11, color: '#7C93A6', fontFamily: 'Inter, system-ui, sans-serif', flexShrink: 0 }}>{label}</span>
-            <span style={{ fontSize: 12, color: '#16324F', textAlign: 'right' }}>{value}</span>
-          </div>
-        ))}
+      <div style={{ marginBottom: 14 }}>
+        <AnswersSummary answers={item.answers} />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <Btn label="Refazer triagem" onClick={redoTriage} variant="primary" />
-        <Btn label="Ver unidades próximas" onClick={() => navigate('unitlist')} variant="secondary" />
+        <Btn
+          label="Ver unidades próximas"
+          onClick={() => navigate("unitlist")}
+          variant="secondary"
+        />
       </div>
     </>
   )
 }
+
 export function LoginScreen({ navigate }: { navigate: Navigate }) {
-  const [identifier, setIdentifier] = useState('')
-  const [senha, setSenha] = useState('')
-  const [error, setError] = useState('')
+  const [identifier, setIdentifier] = useState("")
+
+  const [senha, setSenha] = useState("")
+
+  const [error, setError] = useState("")
 
   const handleLogin = () => {
     const account = UserStorage.login(identifier, senha)
+
     if (account) {
-      setError('')
-      navigate('profile')
+      setError("")
+
+      navigate("profile")
     } else {
-      setError('E-mail/telefone ou senha incorretos.')
+      setError("E-mail/telefone ou senha incorretos.")
     }
   }
 
   return (
     <ScreenWrap>
-      <NavBar title="Entrar" onBack={() => navigate('home')} />
+      <NavBar title="Entrar" onBack={() => navigate("home")} />
       <Content>
-        <Field label="E-mail ou telefone" placeholder="seu@email.com" value={identifier} onChange={setIdentifier} />
-        <Field label="Senha" placeholder="••••••••" value={senha} onChange={setSenha} />
+        <Field
+          label="E-mail ou telefone"
+          placeholder="seu@email.com"
+          value={identifier}
+          onChange={setIdentifier}
+        />
+        <Field
+          label="Senha"
+          placeholder="••••••••"
+          value={senha}
+          onChange={setSenha}
+        />
         {error && (
-          <div style={{ fontSize: 11, color: '#DC2626', marginBottom: 12 }}>⚠ {error}</div>
+          <div style={{ fontSize: 11, color: "#DC2626", marginBottom: 12 }}>
+            ⚠ {error}
+          </div>
         )}
         <Btn label="Entrar" onClick={handleLogin} variant="primary" />
         <div style={{ marginTop: 8 }}>
-          <Btn label="Ainda não tenho conta" onClick={() => navigate('register')} variant="ghost" />
+          <Btn
+            label="Ainda não tenho conta"
+            onClick={() => navigate("register")}
+            variant="ghost"
+          />
         </div>
       </Content>
     </ScreenWrap>
