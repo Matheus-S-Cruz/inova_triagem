@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 import {
   MapContainer,
@@ -10,6 +10,8 @@ import {
 } from "react-leaflet"
 
 import L from "leaflet"
+
+import { useGeolocation, FLORIANOPOLIS_FALLBACK } from "../lib/geolocation"
 
 // ─── Fix do ícone padrão do Leaflet ─────────────────────────────────────────
 // Bundlers como o Vite não resolvem os caminhos relativos que o Leaflet usa
@@ -26,11 +28,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 })
 
-// ─── Tipo de unidade de saúde ───────────────────────────────────────────────
-// TODO: quando o backend/classificação de risco estiver pronto, popular esse
-// tipo com os dados reais (id, nome, tipo, distância, lotação, etc.) e passar
-// via prop `units` para o LocationMap. Por enquanto o mapa só mostra a
-// localização do paciente.
 export interface HealthUnitMarker {
   id: string | number
   name: string
@@ -46,7 +43,6 @@ const UNIT_TYPE_COLORS: Record<HealthUnitMarker["type"], string> = {
   Particular: "#0369a1",
 }
 
-/** Ícone colorido por tipo de unidade — usado quando `units` for preenchido. */
 function unitIcon(type: HealthUnitMarker["type"]) {
   const color = UNIT_TYPE_COLORS[type]
   return L.divIcon({
@@ -61,68 +57,86 @@ function unitIcon(type: HealthUnitMarker["type"]) {
   })
 }
 
+/** Ícone maior/destacado — usado para a unidade recomendada (mais próxima). */
+function highlightedUnitIcon(type: HealthUnitMarker["type"]) {
+  const color = UNIT_TYPE_COLORS[type]
+  return L.divIcon({
+    className: "unit-marker-highlight",
+    html: `<div style="
+      width: 22px; height: 22px; border-radius: 50%;
+      background:${color}; border: 3px solid #fff;
+      box-shadow: 0 0 0 3px ${color}66, 0 2px 8px rgba(0,0,0,0.5);
+    "></div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  })
+}
+
 // ─── Sub-componente: centraliza o mapa quando a localização muda ───────────
 // react-leaflet não recentraliza automaticamente quando o `center` do
 // MapContainer muda depois da primeira renderização — esse componente
-// resolve isso chamando map.setView() sempre que `position` mudar.
+// resolve isso chamando map.flyTo() sempre que `position` mudar.
 function RecenterOnLocate({
-    position,
-    zoom = 16,
-  }: {
-    position: [number, number]
-    zoom?: number
-  }) {
+  position,
+  zoom = 16,
+}: {
+  position: [number, number]
+  zoom?: number
+}) {
   const map = useMap()
 
   useEffect(() => {
-    // flyTo anima o pan + zoom juntos, em vez de "pular" direto pra posição
     map.flyTo(position, zoom, { duration: 1.2 })
   }, [position, zoom, map])
 
   return null
 }
 
-const SAO_PAULO_FALLBACK: [number, number] = [-23.5505, -46.6333]
+// ─── Sub-componente: enquadra usuário + unidade destacada juntos ──────────
+// Usado quando já existe uma unidade recomendada (ver
+// TriageContext.nearestUnit) — em vez de só centralizar no usuário, o mapa
+// ajusta zoom/pan para os dois pontos ficarem visíveis ao mesmo tempo.
+function FocusOnPair({
+  userPosition,
+  unitPosition,
+}: {
+  userPosition: [number, number]
+  unitPosition: [number, number]
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    const bounds = L.latLngBounds([userPosition, unitPosition])
+    map.flyToBounds(bounds, { padding: [48, 48], duration: 1.2, maxZoom: 16 })
+  }, [userPosition, unitPosition, map])
+
+  return null
+}
 
 export function LocationMap({
   units = [],
   onUnitClick,
+  highlightUnitId,
 }: {
-  /** Unidades de saúde a exibir no mapa. Vazio por enquanto — ver TODO acima. */
+  /** Unidades de saúde a exibir no mapa. */
   units?: HealthUnitMarker[]
   onUnitClick?: (unit: HealthUnitMarker) => void
+  /** Id da unidade a destacar (ex: a mais próxima calculada no resultado da
+   * triagem — ver TriageContext.nearestUnit). Recebe ícone maior e o mapa
+   * se ajusta para mostrar usuário + unidade juntos. */
+  highlightUnitId?: string | number
 }) {
-  const [position, setPosition] = useState<[number, number] | null>(null)
-  const [accuracy, setAccuracy] = useState<number | null>(null)
-  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading")
-  const [errorMsg, setErrorMsg] = useState("")
+  const { position, accuracy, status, errorMsg } = useGeolocation()
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setStatus("error")
-      setErrorMsg("Seu navegador não suporta geolocalização.")
-      return
-    }
+  const center = position ?? FLORIANOPOLIS_FALLBACK
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setPosition([pos.coords.latitude, pos.coords.longitude])
-        setAccuracy(pos.coords.accuracy)
-        setStatus("ok")
-      },
-      (err) => {
-        setStatus("error")
-        setErrorMsg(
-          err.code === err.PERMISSION_DENIED
-            ? "Permissão de localização negada. Mostrando região padrão."
-            : "Não foi possível obter sua localização. Mostrando região padrão.",
-        )
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-    )
-  }, [])
+  const highlighted = highlightUnitId
+    ? units.find((u) => u.id === highlightUnitId)
+    : undefined
 
-  const center = position ?? SAO_PAULO_FALLBACK
+  const otherUnits = highlighted
+    ? units.filter((u) => u.id !== highlighted.id)
+    : units
 
   return (
     <div style={{ position: "relative" }}>
@@ -144,7 +158,15 @@ export function LocationMap({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {position && <RecenterOnLocate position={position} zoom={16} />}
+          {position && highlighted && (
+            <FocusOnPair
+              userPosition={position}
+              unitPosition={[highlighted.lat, highlighted.lng]}
+            />
+          )}
+          {position && !highlighted && (
+            <RecenterOnLocate position={position} zoom={16} />
+          )}
 
           {position && (
             <>
@@ -165,10 +187,7 @@ export function LocationMap({
             </>
           )}
 
-          {/* TODO: quando `units` vier preenchido (resultado da triagem +
-              busca de unidades próximas), estes marcadores aparecem
-              automaticamente — nenhuma outra mudança é necessária aqui. */}
-          {units.map((unit) => (
+          {otherUnits.map((unit) => (
             <Marker
               key={unit.id}
               position={[unit.lat, unit.lng]}
@@ -184,6 +203,25 @@ export function LocationMap({
               </Popup>
             </Marker>
           ))}
+
+          {highlighted && (
+            <Marker
+              position={[highlighted.lat, highlighted.lng]}
+              icon={highlightedUnitIcon(highlighted.type)}
+              eventHandlers={{
+                click: () => onUnitClick?.(highlighted),
+                add: (e) => {
+                  ;(e.target as L.Marker).openPopup()
+                },
+              }}
+            >
+              <Popup>
+                <strong>⭐ {highlighted.name}</strong>
+                <br />
+                {highlighted.type} — unidade recomendada
+              </Popup>
+            </Marker>
+          )}
         </MapContainer>
       </div>
 

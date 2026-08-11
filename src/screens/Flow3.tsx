@@ -16,6 +16,13 @@ import {
 } from "../components/Wire"
 
 import { LocationMap } from "../components/LocationMap"
+import { HEALTH_UNITS, RISK_LEVEL_UNIT_TYPES } from "../lib/healthUnits"
+import {
+  useGeolocation,
+  distanceKm,
+  FLORIANOPOLIS_FALLBACK,
+} from "../lib/geolocation"
+import { useTriage } from "../context/TriageContext"
 
 // ─── Unit data ────────────────────────────────────────────────────────────────
 
@@ -112,6 +119,58 @@ const TYPE_COLORS: Record<UnitType, string> = {
   Particular: "#0369a1",
 }
 
+// ─── Classificação por distância (substitui a antiga lotação mockada) ─────
+// Verde = perto, Amarelo = médio, Vermelho = longe. Os limites (em km) são
+// pensados para Florianópolis — a maioria das unidades cadastradas em
+// lib/healthUnits.ts fica dentro de uma faixa de poucos km do usuário.
+type DistanceLevel = "near" | "medium" | "far"
+
+function getDistanceLevel(km: number): DistanceLevel {
+  if (km <= 2) return "near"
+  if (km <= 5) return "medium"
+  return "far"
+}
+
+const DISTANCE_CONFIG: Record<DistanceLevel, { color: string; label: string }> = {
+  near: { color: "#16a34a", label: "Perto" },
+  medium: { color: "#ca8a04", label: "Médio" },
+  far: { color: "#dc2626", label: "Longe" },
+}
+
+function DistanceTag({ km }: { km: number }) {
+  const level = getDistanceLevel(km)
+  const c = DISTANCE_CONFIG[level]
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        fontSize: 11,
+        fontWeight: 600,
+        color: c.color,
+        border: `1.5px solid ${c.color}`,
+        borderRadius: 20,
+        padding: "2px 8px",
+        fontFamily: "Inter, system-ui, sans-serif",
+        backgroundColor: `${c.color}12`,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          backgroundColor: c.color,
+          flexShrink: 0,
+          display: "inline-block",
+        }}
+      />
+      {c.label}
+    </span>
+  )
+}
+
 // ─── 6. Mapa ──────────────────────────────────────────────────────────────────
 
 export function MapScreen({ navigate }: { navigate: Navigate }) {
@@ -119,8 +178,38 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
   const [filter, setFilter] = useState<UnitType | "Todos">("Todos")
 
-  const filteredUnits =
-    filter === "Todos" ? UNITS : UNITS.filter((u) => u.type === filter)
+  const { nearestUnit, result } = useTriage()
+
+  const { position: userPosition } = useGeolocation()
+
+  const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
+
+  // Depois de uma triagem, o resultado já aponta a unidade recomendada
+  // (ver ResultScreen, em Flow2.tsx) — nesse caso o mapa mostra só ela, em
+  // vez das 61 unidades cadastradas, pra não poluir a recomendação. Se o
+  // usuário chegou aqui sem ter feito triagem (ex: menu "Unidades
+  // próximas"), mantém a lista completa normalmente.
+  const mapUnits = nearestUnit ? [nearestUnit.unit] : HEALTH_UNITS
+
+  // "Mais próximas": por padrão (filtro "Todos"), prioriza o(s) tipo(s) de
+  // unidade recomendado(s) pelo resultado da triagem (ex: laranja → só
+  // UPAs) — assim a lista já nasce alinhada com a recomendação. Se o
+  // usuário escolher um filtro manual (UBS/UPA/Hospital/Particular), esse
+  // filtro tem prioridade. Distância calculada com o Leaflet
+  // (lib/geolocation.ts), a partir da localização real do usuário.
+  const recommendedTypes = RISK_LEVEL_UNIT_TYPES[result.level]
+
+  const basePool =
+    filter === "Todos"
+      ? HEALTH_UNITS.filter((u) => recommendedTypes.includes(u.type))
+      : HEALTH_UNITS.filter((u) => u.type === filter)
+
+  const pool = basePool.length > 0 ? basePool : HEALTH_UNITS
+
+  const nearbyUnits = pool
+    .map((u) => ({ ...u, distKm: distanceKm(origin, [u.lat, u.lng]) }))
+    .sort((a, b) => a.distKm - b.distKm)
+    .slice(0, 3)
 
   return (
     <ScreenWrap>
@@ -199,10 +288,11 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
       <Content noPad>
         <div style={{ padding: "12px 16px" }}>
-          {/* TODO: quando tiver o array de unidades vindo do backend/classificação,
-          passe via `units={unidadesProximas}` e
-          `onUnitClick={(u) => navigate("unitdetail")}` */}
-          <LocationMap />
+          <LocationMap
+             units={mapUnits}
+             onUnitClick={() => navigate("unitdetail")}
+             highlightUnitId={nearestUnit?.unit.id}
+           />
         </div>
 
         <div style={{ padding: "0 16px 8px" }}>
@@ -214,15 +304,13 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
               marginBottom: 6,
             }}
           >
-            LEGENDA — LOTAÇÃO DOS MARCADORES:
+            LEGENDA — DISTÂNCIA DOS MARCADORES:
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             {[
-              { color: "#16a34a", label: "Baixa" },
-
-              { color: "#ca8a04", label: "Média" },
-
-              { color: "#dc2626", label: "Alta" },
+              { color: "#16a34a", label: "Perto" },
+              { color: "#ca8a04", label: "Médio" },
+              { color: "#dc2626", label: "Longe" },
             ].map(({ color, label }) => (
               <div
                 key={label}
@@ -252,7 +340,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
         <div style={{ padding: "8px 16px 16px" }}>
           <SectionTitle>Mais próximas</SectionTitle>
-          {filteredUnits.length === 0 ? (
+          {nearbyUnits.length === 0 ? (
             <div
               style={{
                 fontSize: 12,
@@ -265,7 +353,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {filteredUnits.slice(0, 3).map((unit) => (
+              {nearbyUnits.map((unit) => (
                 <div
                   key={unit.id}
                   onClick={() => navigate("unitdetail")}
@@ -319,12 +407,14 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
                         fontFamily: "Inter, system-ui, sans-serif",
                       }}
                     >
-                      {unit.distance}
+                      {unit.distKm < 1
+                        ? `${Math.round(unit.distKm * 1000)} m`
+                        : `${unit.distKm.toFixed(1)} km`}
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <OccupancyTag level={unit.occupancy} />
-                    <WaitTime minutes={unit.wait} />
+                    <DistanceTag km={unit.distKm} />
+                    
                   </div>
                 </div>
               ))}
@@ -556,7 +646,28 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 // ─── 8. Detalhe da Unidade ────────────────────────────────────────────────────
 
 export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
-  const unit = UNITS[1] // demo: UPA Santo André
+  const { nearestUnit } = useTriage()
+
+  // Quando o ResultScreen já calculou a unidade mais próxima (ver
+  // TriageContext.nearestUnit), mostra os dados reais dela — nome, tipo e
+  // distância real do usuário. Sem isso (ex: acesso direto pelo menu de
+  // navegação, sem ter passado pela triagem), cai no dado de demonstração.
+  const unit: Unit = nearestUnit
+    ? {
+        id: 0,
+        name: nearestUnit.unit.name,
+        type: nearestUnit.unit.type,
+        distance:
+          nearestUnit.distanceKm < 1
+            ? `${Math.round(nearestUnit.distanceKm * 1000)} m`
+            : `${nearestUnit.distanceKm.toFixed(1)} km`,
+        wait: 0,
+        occupancy: "medium",
+        address: "Endereço não cadastrado ainda",
+        hours: "Consulte a unidade",
+        phone: "—",
+      }
+    : UNITS[1] // demo: UPA Santo André
 
   return (
     <ScreenWrap>

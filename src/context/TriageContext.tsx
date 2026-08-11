@@ -15,6 +15,8 @@ import {
   type TriageResult,
 } from "../lib/triage"
 
+import type { NearestUnitResult } from "../lib/geolocation"
+
 // ─── Estado compartilhado da triagem ───────────────────────────────────────
 
 // As telas Q1–Q6 (Flow1.tsx) escrevem aqui a cada resposta, e o ResultScreen
@@ -51,6 +53,13 @@ interface TriageContextValue {
   historySaved: boolean
 
   markHistorySaved: () => void
+
+     /** Unidade mais próxima compatível com o nível de risco atual — calculada
+    * pelo ResultScreen (Flow2.tsx) assim que a triagem termina. Consumida
+    * pelo MapScreen (destaque no mapa) e pelo UnitDetailScreen. */
+  nearestUnit: NearestUnitResult | null
+ 
+   setNearestUnit: Dispatch<SetStateAction<NearestUnitResult | null>>
 }
 
 const TriageContext = createContext<TriageContextValue | null>(null)
@@ -59,6 +68,10 @@ export function TriageProvider({ children }: { children: ReactNode }) {
   const [answers, setAnswers] = useState<TriageAnswers>(emptyTriageAnswers())
 
   const [historySaved, setHistorySaved] = useState(false)
+
+  const [nearestUnit, setNearestUnit] = useState<NearestUnitResult | null>(
+    null,
+  )
 
   const updateAnswers = (patch: Partial<TriageAnswers>) =>
     setAnswers((prev) => ({ ...prev, ...patch }))
@@ -91,6 +104,8 @@ export function TriageProvider({ children }: { children: ReactNode }) {
     setAnswers(emptyTriageAnswers())
 
     setHistorySaved(false)
+
+    setNearestUnit(null)
   }
 
   const markHistorySaved = () => setHistorySaved(true)
@@ -111,6 +126,9 @@ export function TriageProvider({ children }: { children: ReactNode }) {
         result,
         historySaved,
         markHistorySaved,
+
+        nearestUnit,
+        setNearestUnit,
       }}
     >
       {children}

@@ -22,6 +22,14 @@ import type { RiskLevel } from "../lib/triage"
 
 import { UserStorage, HistoryStorage, formatTodayDate } from "../lib/storage"
 
+import {
+   useGeolocation,
+   findNearestUnit,
+   FLORIANOPOLIS_FALLBACK,
+} from "../lib/geolocation"
+
+import { HEALTH_UNITS, RISK_LEVEL_UNIT_TYPES } from "../lib/healthUnits"
+
 // ─── 4. Resultado da Classificação ────────────────────────────────────────────
 
 const RECOMMENDATIONS: Record<RiskLevel, {
@@ -117,12 +125,33 @@ const LEVEL_CLASSIFICATION: Record<RiskLevel, string> = {
 }
 
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
-  const { answers, result, resetAnswers, historySaved, markHistorySaved } =
-    useTriage()
+  const {
+     answers,
+     result,
+     resetAnswers,
+     historySaved,
+     markHistorySaved,
+     nearestUnit,
+     setNearestUnit,
+   } = useTriage()
 
   const rec = RECOMMENDATIONS[result.level]
 
   const alreadySavedRef = useRef(false)
+
+  const { position: userPosition, status: geoStatus } = useGeolocation()
+
+  // Calcula a unidade mais próxima compatível com o nível de risco (ex:
+  // vermelho → só hospitais) assim que a localização estiver disponível.
+  // Enquanto a geolocalização carrega/falha, usa o fallback de
+  // Florianópolis — assim a recomendação nunca fica vazia.
+  useEffect(() => {
+    const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
+
+    const preferredTypes = RISK_LEVEL_UNIT_TYPES[result.level]
+
+    setNearestUnit(findNearestUnit(origin, HEALTH_UNITS, preferredTypes))
+  }, [userPosition, result.level])
 
   useEffect(() => {
     const account = UserStorage.get()
@@ -167,6 +196,65 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
       <NavBar title="Resultado da Triagem" />
       <Content>
         <RiskBadge level={rec.level} />
+
+        {nearestUnit && (
+          <div
+            style={{
+              border: "1.5px solid #B8D2E0",
+              borderRadius: 10,
+              padding: "12px 14px",
+              backgroundColor: "#F5F9FB",
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#5C7690",
+                letterSpacing: "0.06em",
+                fontFamily: "Inter, system-ui, sans-serif",
+                marginBottom: 6,
+              }}
+            >
+              📍 UNIDADE MAIS PRÓXIMA RECOMENDADA
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#0F2A4A" }}>
+                {nearestUnit.unit.name}
+              </div>
+              <div style={{ fontSize: 11, color: "#7C93A6" }}>
+                {nearestUnit.unit.type} · a{" "}
+                {nearestUnit.distanceKm < 1
+                  ? `${Math.round(nearestUnit.distanceKm * 1000)} m`
+                  : `${nearestUnit.distanceKm.toFixed(1)} km`}{" "}
+                de você
+              </div>
+            </div>
+            {geoStatus === "error" && (
+              <div style={{ fontSize: 10, color: "#CA8A04", marginBottom: 8 }}>
+                ⚠ Localização não disponível — distância calculada a partir
+                do centro de Florianópolis.
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8 }}>
+              <Btn
+                label="Ver no mapa"
+                onClick={() => navigate("map")}
+                variant="primary"
+                small
+                full={false}
+              />
+              <Btn
+                label="Ver detalhes"
+                onClick={() => navigate("unitdetail")}
+                variant="secondary"
+                small
+                full={false}
+              />
+            </div>
+          </div>
+        )}
 
         <div style={{ marginBottom: 12 }}>
           <div
