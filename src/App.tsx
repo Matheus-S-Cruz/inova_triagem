@@ -223,9 +223,6 @@ export default function App() {
     setNavOpen(false) // fecha o drawer ao navegar, em telas pequenas
   }
 
-  const currentLabel =
-    FLOWS.flatMap((f) => f.screens).find((s) => s.id === screen)?.label ?? ""
-
   return (
     <div
       className="app-shell"
@@ -465,26 +462,6 @@ export default function App() {
           overflowY: "auto",
         }}
       >
-        {/* Frame label — só visual de dev, pode remover se quiser 100% "produto" */}
-        <div
-          style={{
-            padding: "8px 0",
-            fontFamily: "Inter, system-ui, sans-serif",
-            fontSize: 11,
-            color: "#5C7690",
-            textAlign: "center",
-          }}
-        >
-          <span
-            style={{
-              backgroundColor: "#B9C8D4",
-              padding: "2px 8px",
-              borderRadius: 2,
-            }}
-          >
-            {currentLabel}
-          </span>
-        </div>
 
         <MobilePage>
           {/* TriageProvider guarda as respostas de Q1–Q6 em um só lugar, para
@@ -495,81 +472,6 @@ export default function App() {
           </TriageProvider>
         </MobilePage>
 
-        {/* Quick-jump arrows */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            padding: "16px 0",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {(() => {
-            const all = FLOWS.flatMap((f) => f.screens)
-
-            const idx = all.findIndex((s) => s.id === screen)
-
-            const prev = idx > 0 ? all[idx - 1] : null
-
-            const next = idx < all.length - 1 ? all[idx + 1] : null
-
-            return (
-              <>
-                <button
-                  onClick={() => prev && navigate(prev.id as ScreenId)}
-                  disabled={!prev}
-                  style={{
-                    padding: "5px 12px",
-                    fontSize: 11,
-                    fontFamily: "Inter, system-ui, sans-serif",
-
-                    backgroundColor: prev ? "#AFC2D1" : "#C6D5E0",
-                    color: prev ? "#16324F" : "#8CA1B2",
-
-                    border: "1px solid #8CA1B2",
-                    cursor: prev ? "pointer" : "default",
-
-                    borderRadius: 2,
-                  }}
-                >
-                  ← Anterior
-                </button>
-                <span
-                  style={{
-                    fontFamily: "Inter, system-ui, sans-serif",
-                    fontSize: 10,
-                    color: "#66809A",
-                  }}
-                >
-                  {FLOWS.flatMap((f) => f.screens).findIndex(
-                    (s) => s.id === screen,
-                  ) + 1}{" "}
-                  / {FLOWS.flatMap((f) => f.screens).length}
-                </span>
-                <button
-                  onClick={() => next && navigate(next.id as ScreenId)}
-                  disabled={!next}
-                  style={{
-                    padding: "5px 12px",
-                    fontSize: 11,
-                    fontFamily: "Inter, system-ui, sans-serif",
-
-                    backgroundColor: next ? "#AFC2D1" : "#C6D5E0",
-                    color: next ? "#16324F" : "#8CA1B2",
-
-                    border: "1px solid #8CA1B2",
-                    cursor: next ? "pointer" : "default",
-
-                    borderRadius: 2,
-                  }}
-                >
-                  Próxima →
-                </button>
-              </>
-            )
-          })()}
-        </div>
       </main>
     </div>
   )

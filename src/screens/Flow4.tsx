@@ -350,31 +350,32 @@ export function RegisterScreen({ navigate }: { navigate: Navigate }) {
             SEXO BIOLÓGICO
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            {["Feminino", "Masculino", "Outro"].map((s) => (
+            {[
+              { label: "Feminino", value: "Feminino" },
+              { label: "Masculino", value: "Masculino" },
+              { label: "Prefiro não informar", value: "Não Informado" },
+            ].map(({ label, value }) => (
               <button
-                key={s}
+                key={value}
                 onClick={() =>
-                  setForm((prev) => ({ ...prev, sexoBiologico: s }))
+                  setForm((prev) => ({ ...prev, sexoBiologico: value }))
                 }
                 style={{
                   flex: 1,
                   padding: "8px 4px",
                   border: "1.5px solid",
-
-                  borderColor: form.sexoBiologico === s ? "#3A5468" : "#C6D5E0",
-
+                  borderColor:
+                    form.sexoBiologico === value ? "#3A5468" : "#C6D5E0",
                   borderRadius: 6,
                   backgroundColor:
-                    form.sexoBiologico === s ? "#EAF2F6" : "#fff",
-
+                    form.sexoBiologico === value ? "#EAF2F6" : "#fff",
                   fontSize: 11,
                   cursor: "pointer",
                   fontFamily: "Inter, system-ui, sans-serif",
-
                   color: "#155E8A",
                 }}
               >
-                {s}
+                {label}
               </button>
             ))}
           </div>
