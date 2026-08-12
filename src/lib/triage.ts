@@ -82,7 +82,7 @@ export function emptyTriageAnswers(): TriageAnswers {
 
 export function isTriageComplete(a: TriageAnswers): boolean {
   return (
-    (!!a.symptom || !!a.symptomOther.trim()) &&
+    !!a.symptom &&
     !!a.duration &&
     a.fever !== null &&
     a.intensePain !== null &&

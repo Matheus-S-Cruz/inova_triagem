@@ -309,7 +309,7 @@ const SYMPTOMS = [
   "Dor abdominal",
 
   "Dor no corpo",
-  "Outros",
+  
 ]
 
 export function Q1Screen({ navigate }: { navigate: Navigate }) {
@@ -317,7 +317,7 @@ export function Q1Screen({ navigate }: { navigate: Navigate }) {
 
   const hasAccount = !!UserStorage.get()
 
-  const canProceed = !!answers.symptom || !!answers.symptomOther.trim()
+  const canProceed = !!answers.symptom
 
   return (
     <ScreenWrap>
@@ -353,8 +353,9 @@ export function Q1Screen({ navigate }: { navigate: Navigate }) {
         ))}
 
         <Field
-          label="Ou descreva com suas palavras"
-          placeholder="Ex: dor ao engolir..."
+          label="Detalhes adicionais (opcional)"
+          placeholder="Ex: dor ao engolir, piora ao deitar..."
+          hint="Selecione um sintoma acima — use este campo só para complementar"
           value={answers.symptomOther}
           onChange={(v) => updateAnswers({ symptomOther: v })}
         />

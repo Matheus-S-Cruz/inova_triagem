@@ -281,22 +281,17 @@ function AppShell({
     navigate("map")
   }
 
-  // Só renderiza os Fluxos 2–5 no menu de navegação por tela (ferramenta de
-  // dev) — o Fluxo 1 (telas internas da triagem) foi substituído pelos
-  // atalhos reais logo abaixo do cabeçalho.
-  const visibleFlows = FLOWS.filter(
-    (f) => f.label !== "Fluxo 1 — Entrada e Triagem",
-  )
+  
 
   const navItemStyle = (active: boolean): React.CSSProperties => ({
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
     width: "100%",
     textAlign: "left",
 
-    padding: "7px 12px 7px 16px",
-    fontSize: 12,
+    padding: "16px 14px 16px 18px",
+    fontSize: 14,
     fontWeight: active ? 700 : 400,
 
     color: active ? "#fff" : "#C6D5E0",
@@ -306,7 +301,8 @@ function AppShell({
     border: "none",
     cursor: "pointer",
 
-    borderLeft: active ? "2px solid #A9BBC9" : "2px solid transparent",
+    borderLeft: active ? "3px solid #A9BBC9" : "3px solid transparent",
+    borderBottom: "1px solid #163B5C",
 
     transition: "all 0.1s",
   })
@@ -507,8 +503,8 @@ function AppShell({
         <div>
           <div
             style={{
-              padding: "10px 12px 3px",
-              fontSize: 9,
+              padding: "14px 12px 6px",
+              fontSize: 10,
               fontFamily: "Inter, system-ui, sans-serif",
 
               color: "#4E6A80",
@@ -519,77 +515,33 @@ function AppShell({
             Acesso
           </div>
 
-          <button
-            onClick={() => navigate("home")}
-            style={navItemStyle(screen === "home")}
-          >
-            🏠 Página Inicial
-          </button>
-
-          {account && (
+           <div style={{ borderTop: "1px solid #163B5C" }}>
             <button
-              onClick={() => navigate("history")}
-              style={navItemStyle(screen === "history")}
+              onClick={() => navigate("home")}
+              style={navItemStyle(screen === "home")}
             >
-              📋 Histórico de Triagens
+              🏠 Página Inicial
             </button>
-          )}
 
-          <button
-            onClick={openNearbyUnits}
-            style={navItemStyle(screen === "map")}
-          >
-            🗺 Unidades Próximas
-          </button>
+            <button
+              onClick={openNearbyUnits}
+              style={navItemStyle(screen === "map")}
+            >
+              🗺 Unidades Próximas
+            </button>
+
+            {account && (
+              <button
+                onClick={() => navigate("history")}
+                style={navItemStyle(screen === "history")}
+              >
+                📋 Histórico de Triagens
+              </button>
+            )}
+          </div>
         </div>
 
-        {visibleFlows.map((flow) => (
-          <div key={flow.label}>
-            <div
-              style={{
-                padding: "10px 12px 3px",
-                fontSize: 9,
-                fontFamily: "Inter, system-ui, sans-serif",
-
-                color: "#4E6A80",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {flow.label}
-            </div>
-            {flow.screens.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => navigate(s.id as ScreenId)}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "left",
-
-                  padding: "5px 12px 5px 16px",
-                  fontSize: 11,
-
-                  color: screen === s.id ? "#fff" : "#7C93A6",
-
-                  backgroundColor: screen === s.id ? "#134E75" : "transparent",
-
-                  border: "none",
-                  cursor: "pointer",
-
-                  borderLeft:
-                    screen === s.id
-                      ? "2px solid #A9BBC9"
-                      : "2px solid transparent",
-
-                  transition: "all 0.1s",
-                }}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        ))}
+       
 
         <div
           style={{
