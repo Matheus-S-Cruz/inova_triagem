@@ -16,7 +16,12 @@
 
 import { describe, it, expect } from "vitest"
 
-import { classifyRisk, emptyTriageAnswers, type TriageAnswers } from "./triage"
+import {
+  classifyRisk,
+  emptyTriageAnswers,
+  isTriageComplete,
+  type TriageAnswers,
+} from "./triage"
 
 /** Helper: parte de respostas vazias e sobrescreve só o que o teste precisa. */
 
@@ -391,5 +396,145 @@ describe("classifyRisk — sempre retorna ao menos um motivo (reasons)", () => {
 
       expect(typeof result.reasons[0]).toBe("string")
     }
+  })
+})
+
+describe("isTriageComplete — sintoma principal é sempre obrigatório", () => {
+  it("todas as respostas obrigatórias preenchidas, com symptom selecionado → true", () => {
+    const result = isTriageComplete(
+      answers({
+        symptom: "Febre",
+        duration: "Hoje (6–24h)",
+        fever: "sim",
+        intensePain: "nao",
+        breathingDifficulty: "nao",
+        rapidWorsening: "nao",
+        usingMedication: "nao",
+      }),
+    )
+
+    expect(result).toBe(true)
+  })
+
+  it("symptomOther preenchido mas symptom vazio → false (não substitui mais a seleção)", () => {
+    const result = isTriageComplete(
+      answers({
+        symptom: null,
+        symptomOther: "Dor ao engolir, piora à noite",
+        duration: "Hoje (6–24h)",
+        fever: "sim",
+        intensePain: "nao",
+        breathingDifficulty: "nao",
+        rapidWorsening: "nao",
+        usingMedication: "nao",
+      }),
+    )
+
+    expect(result).toBe(false)
+  })
+
+  it("nenhuma resposta preenchida → false", () => {
+    expect(isTriageComplete(emptyTriageAnswers())).toBe(false)
+  })
+})
+
+describe("classifyRisk — grupo de risco isolado NUNCA eleva sozinho a red", () => {
+  // Guarda de regressão para a regra clínica: vulnerabilidade (idoso,
+  // gestante, criança, etc.) baixa o limiar para escalar a gravidade, mas
+  // não pula direto para emergência sem um sinal de alarme respiratório ou
+  // cardíaco de verdade — senão o app super-triaria esses grupos em massa.
+  it("idoso sozinho, com ou sem febre/piora rápida → nunca red", () => {
+    const cenarios: Partial<TriageAnswers>[] = [
+      { vulnerableGroups: ["Idoso (60 anos ou mais)"] },
+
+      { vulnerableGroups: ["Idoso (60 anos ou mais)"], fever: "sim" },
+
+      {
+        vulnerableGroups: ["Idoso (60 anos ou mais)"],
+        rapidWorsening: "sim",
+      },
+
+      {
+        vulnerableGroups: ["Idoso (60 anos ou mais)"],
+        fever: "sim",
+        rapidWorsening: "sim",
+      },
+    ]
+
+    for (const cenario of cenarios) {
+      const result = classifyRisk(answers(cenario))
+
+      expect(result.level).not.toBe("red")
+    }
+  })
+
+  it("gestante com febre e piora rápida → orange (urgente), não red", () => {
+    const result = classifyRisk(
+      answers({
+        vulnerableGroups: ["Gestante"],
+
+        fever: "sim",
+
+        rapidWorsening: "sim",
+      }),
+    )
+
+    expect(result.level).toBe("orange")
+  })
+
+  it("todos os grupos de alto risco marcados ao mesmo tempo, sem sinal respiratório/cardíaco → nunca red", () => {
+    const result = classifyRisk(
+      answers({
+        vulnerableGroups: [
+          "Criança (menor de 5 anos)",
+          "Idoso (60 anos ou mais)",
+          "Gestante",
+          "Puérpera (até 45 dias após parto)",
+          "Imunossuprimido / transplantado",
+        ],
+
+        fever: "sim",
+
+        rapidWorsening: "sim",
+      }),
+    )
+
+    expect(result.level).not.toBe("red")
+  })
+})
+
+describe("classifyRisk — doença crônica isolada", () => {
+  it("doença crônica sem febre nem piora → green (não eleva sozinha)", () => {
+    const result = classifyRisk(
+      answers({
+        vulnerableGroups: [
+          "Portador de doença crônica (diabetes, HAS, cardiopatia, DPOC...)",
+        ],
+
+        fever: "nao",
+
+        rapidWorsening: "nao",
+      }),
+    )
+
+    expect(result.level).toBe("green")
+  })
+
+  it("doença crônica + falta de ar isolada → orange (pela regra geral de falta de ar)", () => {
+    const result = classifyRisk(
+      answers({
+        vulnerableGroups: [
+          "Portador de doença crônica (diabetes, HAS, cardiopatia, DPOC...)",
+        ],
+
+        breathingDifficulty: "sim",
+
+        rapidWorsening: "nao",
+
+        intensePain: "nao",
+      }),
+    )
+
+    expect(result.level).toBe("orange")
   })
 })
