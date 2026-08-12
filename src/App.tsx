@@ -2,7 +2,9 @@ import { useEffect, useState } from "react"
 
 import { MobilePage } from "./components/Wire"
 
-import { TriageProvider } from "./context/TriageContext"
+import { TriageProvider, useTriage } from "./context/TriageContext"
+
+import { UserStorage, type Usuario } from "./lib/storage"
 
 import {
   HomeScreen,
@@ -32,6 +34,11 @@ export type ScreenId = "home" | "lgpd" | "q1" | "q2" | "q3" | "q4" | "q5" | "q6"
 
 export type Navigate = (to: ScreenId) => void
 
+// FLOWS continua servindo de fonte de verdade para ALL_SCREEN_IDS (validação
+// do hash da URL) — não removemos "Fluxo 1" daqui, senão um F5 numa tela de
+// pergunta (ex: #q3) cairia em "home" por não achar o hash na lista válida.
+// A seção "Fluxo 1" só deixa de ser RENDERIZADA no menu lateral (ver
+// `visibleFlows` dentro de AppShell), substituída pelos atalhos reais.
 const FLOWS = [
   {
     label: "Fluxo 1 — Entrada e Triagem",
@@ -223,6 +230,87 @@ export default function App() {
     setNavOpen(false) // fecha o drawer ao navegar, em telas pequenas
   }
 
+  // TriageProvider precisa envolver o menu lateral também (não só a tela
+  // ativa), porque o atalho "Unidades Próximas" do menu usa setNearestUnit
+  // do contexto — ver AppShell logo abaixo.
+  return (
+    <TriageProvider>
+      <AppShell
+        screen={screen}
+        navigate={navigate}
+        navOpen={navOpen}
+        setNavOpen={setNavOpen}
+        navCollapsed={navCollapsed}
+        setNavCollapsed={setNavCollapsed}
+      />
+    </TriageProvider>
+  )
+}
+
+function AppShell({
+  screen,
+  navigate,
+  navOpen,
+  setNavOpen,
+  navCollapsed,
+  setNavCollapsed,
+}: {
+  screen: ScreenId
+  navigate: Navigate
+  navOpen: boolean
+  setNavOpen: (v: boolean | ((prev: boolean) => boolean)) => void
+  navCollapsed: boolean
+  setNavCollapsed: (v: boolean) => void
+}) {
+  const { setNearestUnit } = useTriage()
+
+  // Recalculado a cada render (que já acontece a cada navigate()) — reflete
+  // login/logout feitos em LoginScreen/RegisterScreen/ProfileScreen sem
+  // precisar de um estado próprio duplicado aqui.
+  const account: Usuario | null = UserStorage.isLoggedIn()
+    ? UserStorage.get()
+    : null
+
+  // "Unidades Próximas" no menu lateral é uma consulta geral, não ligada a
+  // uma triagem específica — limpa o nearestUnit (se houver, de uma
+  // triagem anterior) para o mapa mostrar TODAS as unidades. Mesma lógica
+  // já usada no atalho "Unidades Próximas" da HomeScreen.
+  const openNearbyUnits = () => {
+    setNearestUnit(null)
+
+    navigate("map")
+  }
+
+  // Só renderiza os Fluxos 2–5 no menu de navegação por tela (ferramenta de
+  // dev) — o Fluxo 1 (telas internas da triagem) foi substituído pelos
+  // atalhos reais logo abaixo do cabeçalho.
+  const visibleFlows = FLOWS.filter(
+    (f) => f.label !== "Fluxo 1 — Entrada e Triagem",
+  )
+
+  const navItemStyle = (active: boolean): React.CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+    textAlign: "left",
+
+    padding: "7px 12px 7px 16px",
+    fontSize: 12,
+    fontWeight: active ? 700 : 400,
+
+    color: active ? "#fff" : "#C6D5E0",
+
+    backgroundColor: active ? "#134E75" : "transparent",
+
+    border: "none",
+    cursor: "pointer",
+
+    borderLeft: active ? "2px solid #A9BBC9" : "2px solid transparent",
+
+    transition: "all 0.1s",
+  })
+
   return (
     <div
       className="app-shell"
@@ -251,7 +339,7 @@ export default function App() {
         </span>
       </div>
 
-      {/* Sidebar navigator (ferramenta de dev — não faz parte do produto final) */}
+      {/* Menu lateral */}
       <aside
         className={`app-sidebar${navOpen ? " open" : ""}${
           navCollapsed ? " collapsed" : ""
@@ -264,7 +352,7 @@ export default function App() {
       >
         <div
           style={{
-            padding: "14px 12px 10px",
+            padding: "16px 12px 14px",
             borderBottom: "1px solid #155E8A",
             position: "relative",
           }}
@@ -319,33 +407,143 @@ export default function App() {
           >
             ‹
           </button>
-          <div
-            style={{
-              fontSize: 9,
-              fontFamily: "Inter, system-ui, sans-serif",
-              color: "#4E6A80",
-              letterSpacing: "0.08em",
-              marginBottom: 3,
-            }}
-          >
-            PROTÓTIPO LO-FI
-          </div>
+
           <div
             style={{
               fontSize: 15,
               fontWeight: 700,
               color: "#fff",
               letterSpacing: "-0.01em",
+              marginBottom: 10,
             }}
           >
             Triagem+
           </div>
-          <div style={{ fontSize: 9, color: "#4E6A80", marginTop: 1 }}>
-            Wireframe · 14 telas · 5 fluxos
-          </div>
+
+          {account ? (
+            // ── Logado: mostra o perfil da pessoa ──────────────────────
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                paddingRight: 30,
+              }}
+            >
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  backgroundColor: "#1B4A6D",
+
+                  border: "1.5px solid #3A6E93",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  fontSize: 18,
+                  flexShrink: 0,
+                }}
+              >
+                👤
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#fff",
+                    marginBottom: 4,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {account.nomeCompleto || "Usuário"}
+                </div>
+                <button
+                  onClick={() => navigate("profile")}
+                  style={{
+                    background: "none",
+                    border: "1px solid #3A6E93",
+                    borderRadius: 12,
+                    padding: "2px 10px",
+
+                    color: "#9FC3DB",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  Meu Perfil
+                </button>
+              </div>
+            </div>
+          ) : (
+            // ── Deslogado: convite para cadastro/login ─────────────────
+            <button
+              onClick={() => navigate("login")}
+              style={{
+                width: "calc(100% - 30px)",
+                background: "linear-gradient(135deg, #155E8A 0%, #0F9B8E 100%)",
+
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+
+                padding: "8px 12px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              Cadastrar / Entrar
+            </button>
+          )}
         </div>
 
-        {FLOWS.map((flow) => (
+        {/* Atalhos reais — no lugar do antigo "Fluxo 1" (telas internas) */}
+        <div>
+          <div
+            style={{
+              padding: "10px 12px 3px",
+              fontSize: 9,
+              fontFamily: "Inter, system-ui, sans-serif",
+
+              color: "#4E6A80",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
+            Acesso
+          </div>
+
+          <button
+            onClick={() => navigate("home")}
+            style={navItemStyle(screen === "home")}
+          >
+            🏠 Página Inicial
+          </button>
+
+          {account && (
+            <button
+              onClick={() => navigate("history")}
+              style={navItemStyle(screen === "history")}
+            >
+              📋 Histórico de Triagens
+            </button>
+          )}
+
+          <button
+            onClick={openNearbyUnits}
+            style={navItemStyle(screen === "map")}
+          >
+            🗺 Unidades Próximas
+          </button>
+        </div>
+
+        {visibleFlows.map((flow) => (
           <div key={flow.label}>
             <div
               style={{
@@ -462,16 +660,9 @@ export default function App() {
           overflowY: "auto",
         }}
       >
-
         <MobilePage>
-          {/* TriageProvider guarda as respostas de Q1–Q6 em um só lugar, para
-              que o algoritmo de classificação em src/lib/triage.ts calcule o
-              resultado real (em vez do antigo nível fixo "UPA") */}
-          <TriageProvider>
-            <ScreenRouter screen={screen} navigate={navigate} />
-          </TriageProvider>
+          <ScreenRouter screen={screen} navigate={navigate} />
         </MobilePage>
-
       </main>
     </div>
   )
