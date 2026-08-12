@@ -33,12 +33,22 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
 
   const hasAccount = UserStorage.isLoggedIn()
 
-  const { resetAnswers } = useTriage()
+  const { resetAnswers, setNearestUnit } = useTriage()
 
   const startTriage = () => {
     resetAnswers() // começa uma nova triagem do zero
 
     navigate(hasAccount ? "q1" : "lgpd")
+  }
+
+  // "Unidades próximas" no Acesso Rápido é uma consulta geral, não ligada
+  // a uma triagem — limpa o `nearestUnit` guardado no contexto (se houver,
+  // de uma triagem anterior) para o mapa mostrar TODAS as unidades, em vez
+  // de continuar destacando só a recomendação da última triagem feita.
+  const openNearbyUnits = () => {
+    setNearestUnit(null)
+
+    navigate("map")
   }
 
   return (
@@ -137,15 +147,27 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
           <SectionTitle>Acesso Rápido</SectionTitle>
           <div style={{ display: "flex", gap: 8 }}>
             {[
-              { icon: "🗺", label: "Unidades\npróximas", to: "map" as const },
+              {
+                icon: "🗺",
+                label: "Unidades\npróximas",
+                onClick: openNearbyUnits,
+              },
 
-              { icon: "📋", label: "Histórico", to: "history" as const },
+              {
+                icon: "📋",
+                label: "Histórico",
+                onClick: () => navigate("history"),
+              },
 
-              { icon: "👤", label: "Perfil", to: "profile" as const },
+              {
+                icon: "👤",
+                label: "Perfil",
+                onClick: () => navigate("profile"),
+              },
             ].map((item) => (
               <button
                 key={item.label}
-                onClick={() => navigate(item.to)}
+                onClick={item.onClick}
                 style={{
                   flex: 1,
                   border: "1.5px solid #D7E3EC",

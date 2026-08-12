@@ -16,6 +16,7 @@ import {
 } from "../lib/triage"
 
 import type { NearestUnitResult } from "../lib/geolocation"
+import type { HealthUnitMarker } from "../components/LocationMap"
 
 // ─── Estado compartilhado da triagem ───────────────────────────────────────
 
@@ -60,9 +61,43 @@ interface TriageContextValue {
   nearestUnit: NearestUnitResult | null
  
    setNearestUnit: Dispatch<SetStateAction<NearestUnitResult | null>>
+   /** Unidade que o usuário clicou explicitamente (numa lista ou no mapa) —
+   * usada pela tela de detalhes (UnitDetailScreen, em Flow3.tsx) para
+   * mostrar os dados da unidade certa, em vez de sempre cair na
+   * `nearestUnit` da triagem ou no dado de demonstração fixo. */
+  selectedUnit: HealthUnitMarker | null
+
+  setSelectedUnit: Dispatch<SetStateAction<HealthUnitMarker | null>>
 }
 
 const TriageContext = createContext<TriageContextValue | null>(null)
+
+// ─── Persistência da unidade selecionada ───────────────────────────────────
+// Diferente das respostas da triagem (que fazem sentido "zerar" a cada F5),
+// a unidade que o usuário está vendo em UnitDetailScreen precisa sobreviver
+// a um refresh de página — senão a tela certa aparece (o hash da URL já
+// cuida disso), mas sem o dado da unidade, caindo no fallback fixo de
+// demonstração. Usa sessionStorage (dura enquanto a aba estiver aberta, ao
+// contrário do localStorage que seria permanente entre sessões).
+const SELECTED_UNIT_KEY = "triagem_app_unidade_selecionada"
+
+function loadSelectedUnit(): HealthUnitMarker | null {
+  if (typeof window === "undefined") return null
+
+  const raw = window.sessionStorage.getItem(SELECTED_UNIT_KEY)
+
+  return raw ? (JSON.parse(raw) as HealthUnitMarker) : null
+}
+
+function persistSelectedUnit(unit: HealthUnitMarker | null) {
+  if (typeof window === "undefined") return
+
+  if (unit) {
+    window.sessionStorage.setItem(SELECTED_UNIT_KEY, JSON.stringify(unit))
+  } else {
+    window.sessionStorage.removeItem(SELECTED_UNIT_KEY)
+  }
+}
 
 export function TriageProvider({ children }: { children: ReactNode }) {
   const [answers, setAnswers] = useState<TriageAnswers>(emptyTriageAnswers())
@@ -72,6 +107,30 @@ export function TriageProvider({ children }: { children: ReactNode }) {
   const [nearestUnit, setNearestUnit] = useState<NearestUnitResult | null>(
     null,
   )
+  
+  const [selectedUnit, setSelectedUnitState] =
+    useState<HealthUnitMarker | null>(() => loadSelectedUnit())
+
+  // Envolve o setState padrão para também gravar no sessionStorage a cada
+  // mudança — assim um F5 na tela de detalhes (UnitDetailScreen) continua
+  // mostrando a unidade certa, em vez de cair no dado de demonstração.
+  const setSelectedUnit: Dispatch<SetStateAction<HealthUnitMarker | null>> = (
+    value,
+  ) => {
+    setSelectedUnitState((prev) => {
+      const next =
+        typeof value === "function"
+          ? (value as (p: HealthUnitMarker | null) => HealthUnitMarker | null)(
+              prev,
+            )
+          : value
+
+      persistSelectedUnit(next)
+
+      return next
+    })
+  }
+
 
   const updateAnswers = (patch: Partial<TriageAnswers>) =>
     setAnswers((prev) => ({ ...prev, ...patch }))
@@ -106,6 +165,8 @@ export function TriageProvider({ children }: { children: ReactNode }) {
     setHistorySaved(false)
 
     setNearestUnit(null)
+
+    setSelectedUnit(null)
   }
 
   const markHistorySaved = () => setHistorySaved(true)
@@ -129,6 +190,9 @@ export function TriageProvider({ children }: { children: ReactNode }) {
 
         nearestUnit,
         setNearestUnit,
+
+        selectedUnit,
+        setSelectedUnit,
       }}
     >
       {children}

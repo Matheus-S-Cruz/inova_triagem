@@ -133,6 +133,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
      markHistorySaved,
      nearestUnit,
      setNearestUnit,
+     setSelectedUnit,
    } = useTriage()
 
   const rec = RECOMMENDATIONS[result.level]
@@ -152,6 +153,22 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
 
     setNearestUnit(findNearestUnit(origin, HEALTH_UNITS, preferredTypes))
   }, [userPosition, result.level])
+
+  // Só é usado quando o resultado recomenda UBS (yellow/green) e o usuário
+  // não consegue ir dentro do horário de atendimento — calcula a UPA mais
+  // próxima sob demanda (independente do nível de risco) e leva direto
+  // para a tela de detalhes dela.
+  const handleSeeNearestUPA = () => {
+    const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
+
+    const nearestUPA = findNearestUnit(origin, HEALTH_UNITS, ["UPA"])
+
+    if (nearestUPA) {
+      setSelectedUnit(nearestUPA.unit)
+
+      navigate("unitdetail")
+    }
+  }
 
   useEffect(() => {
     const account = UserStorage.get()
@@ -253,6 +270,40 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
                 full={false}
               />
             </div>
+          </div>
+        )}
+
+         {(result.level === "yellow" || result.level === "green") && (
+          <div
+            style={{
+              border: "1.5px solid #FDE68A",
+              borderRadius: 10,
+              padding: "12px 14px",
+              backgroundColor: "#FFFBEB",
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
+              <span style={{ fontSize: 15, flexShrink: 0 }}>🕐</span>
+              <span style={{ fontSize: 12, color: "#7C5B00", lineHeight: 1.5 }}>
+                UBS costumam funcionar das <strong>7h às 17h</strong>. Se você
+                não conseguir se deslocar dentro desse horário, o mais
+                indicado é procurar uma UPA (funcionam 24 horas).
+              </span>
+            </div>
+            <Btn
+              label="Ver UPA mais próxima"
+              onClick={handleSeeNearestUPA}
+              variant="secondary"
+              small
+            />
           </div>
         )}
 

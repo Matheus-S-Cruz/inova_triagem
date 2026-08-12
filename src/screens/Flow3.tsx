@@ -5,8 +5,6 @@ import type { Navigate } from "../App"
 import {
   NavBar,
   Btn,
-  OccupancyTag,
-  WaitTime,
   SectionTitle,
   Divider,
   A11yNote,
@@ -178,7 +176,9 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
   const [filter, setFilter] = useState<UnitType | "Todos">("Todos")
 
-  const { nearestUnit, result } = useTriage()
+  const [sort, setSort] = useState<"dist" | "name">("dist")
+
+  const { nearestUnit, result, setSelectedUnit } = useTriage()
 
   const { position: userPosition } = useGeolocation()
 
@@ -208,12 +208,17 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
   const nearbyUnits = pool
     .map((u) => ({ ...u, distKm: distanceKm(origin, [u.lat, u.lng]) }))
-    .sort((a, b) => a.distKm - b.distKm)
+    .sort((a, b) =>
+      sort === "dist" ? a.distKm - b.distKm : a.name.localeCompare(b.name),
+  )
     .slice(0, 3)
 
   return (
     <ScreenWrap>
-      <NavBar title="Unidades de Saúde" onBack={() => navigate("result")} />
+      <NavBar
+        title="Unidades de Saúde"
+        onBack={() => navigate(nearestUnit ? "result" : "home")}
+      />
 
       <div
         style={{
@@ -260,7 +265,7 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
           overflowX: "auto",
         }}
       >
-        {(["Todos", "UBS", "UPA", "Hospital", "Particular"] as const).map(
+        {(["Todos", "UBS", "UPA", "Hospital"] as const).map(
           (f) => (
             <button
               key={f}
@@ -290,7 +295,10 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
         <div style={{ padding: "12px 16px" }}>
           <LocationMap
              units={mapUnits}
-             onUnitClick={() => navigate("unitdetail")}
+             onUnitClick={(unit) => {
+              setSelectedUnit(unit)
+              navigate("unitdetail")
+            }}
              highlightUnitId={nearestUnit?.unit.id}
            />
         </div>
@@ -339,6 +347,50 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
         </div>
 
         <div style={{ padding: "8px 16px 16px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 10,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                color: "#7C93A6",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              Ordenar:
+            </span>
+            {[
+              { k: "dist" as const, l: "Distância" },
+              { k: "name" as const, l: "Nome (A–Z)" },
+            ].map(({ k, l }) => (
+              <button
+                key={k}
+                onClick={() => setSort(k)}
+                style={{
+                  padding: "3px 8px",
+                  border: "1px solid",
+                  borderRadius: 3,
+                  cursor: "pointer",
+                  fontSize: 10,
+
+                  borderColor: sort === k ? "#4E6A80" : "#D7E3EC",
+
+                  backgroundColor: sort === k ? "#4E6A80" : "#fff",
+
+                  color: sort === k ? "#fff" : "#5C7690",
+
+                  fontFamily: "Inter, system-ui, sans-serif",
+                }}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
           <SectionTitle>Mais próximas</SectionTitle>
           {nearbyUnits.length === 0 ? (
             <div
@@ -356,7 +408,10 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
               {nearbyUnits.map((unit) => (
                 <div
                   key={unit.id}
-                  onClick={() => navigate("unitdetail")}
+                  onClick={() => {
+                    setSelectedUnit(unit)
+                    navigate("unitdetail")
+                  }}
                   style={{
                     border: "1.5px solid #DCE7EF",
                     borderRadius: 8,
@@ -439,12 +494,25 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 // ─── 7. Lista de Unidades ─────────────────────────────────────────────────────
 
 export function UnitListScreen({ navigate }: { navigate: Navigate }) {
-  const [sort, setSort] = useState<"dist" | "wait" | "occ">("dist")
+  const [sort, setSort] = useState<"dist" | "name">("dist")
 
   const [filter, setFilter] = useState<UnitType | "Todos">("Todos")
 
-  const filtered =
-    filter === "Todos" ? UNITS : UNITS.filter((u) => u.type === filter)
+  const { setSelectedUnit } = useTriage()
+
+  const { position: userPosition } = useGeolocation()
+
+  const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
+
+  const filtered = (
+    filter === "Todos"
+      ? HEALTH_UNITS
+      : HEALTH_UNITS.filter((u) => u.type === filter)
+  )
+    .map((u) => ({ ...u, distKm: distanceKm(origin, [u.lat, u.lng]) }))
+    .sort((a, b) =>
+      sort === "dist" ? a.distKm - b.distKm : a.name.localeCompare(b.name),
+    )
 
   return (
     <ScreenWrap>
@@ -493,7 +561,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
           overflowX: "auto",
         }}
       >
-        {(["Todos", "UBS", "UPA", "Hospital", "Particular"] as const).map(
+        {(["Todos", "UBS", "UPA", "Hospital"] as const).map(
           (f) => (
             <button
               key={f}
@@ -519,7 +587,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
         )}
       </div>
 
-      {/* Sort */}
+       {/* Sort */}
       <div
         style={{
           padding: "6px 16px",
@@ -540,8 +608,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
         </span>
         {[
           { k: "dist" as const, l: "Distância" },
-          { k: "wait" as const, l: "Espera" },
-          { k: "occ" as const, l: "Lotação" },
+          { k: "name" as const, l: "Nome (A–Z)" },
         ].map(({ k, l }) => (
           <button
             key={k}
@@ -569,7 +636,13 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 
       <Content>
         {filtered.map((unit) => (
-          <ListRow key={unit.id} onClick={() => navigate("unitdetail")}>
+          <ListRow
+            key={unit.id}
+            onClick={() => {
+              setSelectedUnit(unit)
+              navigate("unitdetail")
+            }}
+          >
             {/* Type badge */}
             <div
               style={{
@@ -613,8 +686,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
                   marginBottom: 3,
                 }}
               >
-                <OccupancyTag level={unit.occupancy} />
-                <WaitTime minutes={unit.wait} />
+                <DistanceTag km={unit.distKm} />
               </div>
               <div
                 style={{
@@ -623,17 +695,35 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
                   fontFamily: "Inter, system-ui, sans-serif",
                 }}
               >
-                📍 {unit.distance} · {unit.hours}
+                📍{" "}
+                {unit.distKm < 1
+                  ? `${Math.round(unit.distKm * 1000)} m`
+                  : `${unit.distKm.toFixed(1)} km`}{" "}
+                · {unit.address ?? "Endereço não cadastrado"}
               </div>
             </div>
           </ListRow>
         ))}
 
+        {filtered.length === 0 && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#9AAEBE",
+              padding: "24px 0",
+              textAlign: "center",
+            }}
+          >
+            Nenhuma unidade do tipo "{filter}" encontrada.
+          </div>
+        )}
+
+
         <A11yNote
           notes={[
-            "Lista ordenável por critérios relevantes (distância, espera)",
+            "Lista ordenável por critérios relevantes (distância, nome)",
 
-            "Status de lotação com rótulo textual além da cor",
+            "Distância comunicada por cor E texto (não só cor)",
 
             "Itens da lista acessíveis por teclado (tab/enter)",
           ]}
@@ -646,13 +736,40 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 // ─── 8. Detalhe da Unidade ────────────────────────────────────────────────────
 
 export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
-  const { nearestUnit } = useTriage()
+  const { nearestUnit, selectedUnit } = useTriage()
+
+  const { position: userPosition } = useGeolocation()
+
+  const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
+
+  // Unidade "fonte" real (com lat/lng) para calcular a distância exibida no
+  // badge — vem de selectedUnit (clique numa lista/mapa) ou nearestUnit
+  // (resultado da triagem). Sem nenhuma das duas, usa uma distância fixa de
+  // demonstração compatível com o dado fictício (UNITS[1]).
+  const sourceUnit = selectedUnit ?? nearestUnit?.unit ?? null
+
+  const distKm = sourceUnit
+    ? distanceKm(origin, [sourceUnit.lat, sourceUnit.lng])
+    : 1.2
 
   // Quando o ResultScreen já calculou a unidade mais próxima (ver
-  // TriageContext.nearestUnit), mostra os dados reais dela — nome, tipo e
-  // distância real do usuário. Sem isso (ex: acesso direto pelo menu de
-  // navegação, sem ter passado pela triagem), cai no dado de demonstração.
-  const unit: Unit = nearestUnit
+  // TriageContext.nearestUnit), ou o usuário clicou em uma unidade numa
+  // lista/mapa (selectedUnit), mostra os dados reais dela — nome, tipo e
+  // endereço reais. Sem isso (ex: acesso direto pelo menu de navegação),
+  // cai no dado de demonstração.
+  const unit: Unit = selectedUnit
+    ? {
+        id: 0,
+        name: selectedUnit.name,
+        type: selectedUnit.type,
+        distance: "—",
+        wait: 0,
+        occupancy: "medium",
+        address: selectedUnit.address || "Endereço não cadastrado ainda",
+        hours: "Consulte a unidade",
+        phone: "—",
+      }
+    : nearestUnit
     ? {
         id: 0,
         name: nearestUnit.unit.name,
@@ -663,7 +780,7 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
             : `${nearestUnit.distanceKm.toFixed(1)} km`,
         wait: 0,
         occupancy: "medium",
-        address: "Endereço não cadastrado ainda",
+        address: nearestUnit.unit.address || "Endereço não cadastrado ainda",
         hours: "Consulte a unidade",
         phone: "—",
       }
@@ -712,7 +829,7 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
               </span>
             </div>
             <div style={{ textAlign: "right" }}>
-              <OccupancyTag level={unit.occupancy} />
+              <DistanceTag km={distKm} />
               <div
                 style={{
                   fontSize: 10,
@@ -721,7 +838,9 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
                   marginTop: 4,
                 }}
               >
-                Atualizado há 5 min
+                {distKm < 1
+                  ? `${Math.round(distKm * 1000)} m de você`
+                  : `${distKm.toFixed(1)} km de você`}
               </div>
             </div>
           </div>
@@ -802,22 +921,7 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
 
         {[
           { icon: "📍", label: "Endereço", value: unit.address },
-
           { icon: "🕐", label: "Horário", value: unit.hours },
-
-          { icon: "📞", label: "Telefone", value: unit.phone },
-
-          {
-            icon: "♿",
-            label: "Acessibilidade",
-            value: "Rampa, banheiro adaptado, libras",
-          },
-
-          {
-            icon: "🚌",
-            label: "Transporte",
-            value: "Linhas 4512, 6280 — parada a 80m",
-          },
         ].map(({ icon, label, value }) => (
           <div
             key={label}
@@ -844,51 +948,9 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
           </div>
         ))}
 
-        <Divider />
-
-        {/* Services */}
-        <SectionTitle>Serviços Disponíveis</SectionTitle>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 6,
-            marginBottom: 16,
-          }}
-        >
-          {[
-            "Clínica Geral",
-            "Pediatria",
-            "Ortopedia",
-            "Raio-X",
-            "Laboratório",
-            "Farmácia",
-          ].map((s) => (
-            <span
-              key={s}
-              style={{
-                fontSize: 11,
-                border: "1px solid #C6D5E0",
-                borderRadius: 4,
-
-                padding: "2px 8px",
-                color: "#4E6A80",
-                backgroundColor: "#F5F9FB",
-              }}
-            >
-              {s}
-            </span>
-          ))}
-        </div>
-
         {/* Actions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
           <Btn label="📍 Como Chegar" onClick={() => {}} variant="primary" />
-          <Btn
-            label="📞 Ligar para a Unidade"
-            onClick={() => {}}
-            variant="secondary"
-          />
           <Btn
             label="← Voltar à lista"
             onClick={() => navigate("unitlist")}
@@ -898,9 +960,9 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
 
         <A11yNote
           notes={[
-            "Status numérico (tempo, capacidade) complementa a cor",
+            "Distância comunicada por cor E texto (não só cor)",
 
-            'Telefone clicável com href="tel:" para usuários de leitor de tela',
+            "Endereço e horário exibidos em texto simples, sem depender de ícone",
           ]}
         />
       </Content>

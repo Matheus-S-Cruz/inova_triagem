@@ -34,6 +34,9 @@ export interface HealthUnitMarker {
   type: "UBS" | "UPA" | "Hospital" | "Particular"
   lat: number
   lng: number
+  /** Endereço completo — exibido no popup do mapa e na tela de detalhes
+    * da unidade (ver UnitDetailScreen, em Flow3.tsx). */
+   address?: string
 }
 
 const UNIT_TYPE_COLORS: Record<HealthUnitMarker["type"], string> = {
@@ -200,6 +203,12 @@ export function LocationMap({
                 <strong>{unit.name}</strong>
                 <br />
                 {unit.type}
+                {unit.address && (
+                  <>
+                    <br />
+                    <span style={{ fontSize: 11 }}>{unit.address}</span>
+                  </>
+                )}
               </Popup>
             </Marker>
           ))}
@@ -219,6 +228,12 @@ export function LocationMap({
                 <strong>⭐ {highlighted.name}</strong>
                 <br />
                 {highlighted.type} — unidade recomendada
+                {highlighted.address && (
+                  <>
+                    <br />
+                    <span style={{ fontSize: 11 }}>{highlighted.address}</span>
+                  </>
+                )}
               </Popup>
             </Marker>
           )}
