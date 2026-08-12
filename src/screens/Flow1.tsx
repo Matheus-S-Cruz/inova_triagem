@@ -509,36 +509,6 @@ export function Q3Screen({ navigate }: { navigate: Navigate }) {
           </div>
         ))}
 
-        {/* Conditional branch note */}
-        {answers.breathingDifficulty === "sim" && (
-          <div
-            style={{
-              border: "1.5px dashed #dc2626",
-              borderRadius: 6,
-              padding: "8px 10px",
-
-              backgroundColor: "#fef2f2",
-              marginBottom: 12,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                fontFamily: "Inter, system-ui, sans-serif",
-                color: "#dc2626",
-                fontWeight: 700,
-                marginBottom: 2,
-              }}
-            >
-              ↳ PERGUNTA CONDICIONAL
-            </div>
-            <div style={{ fontSize: 11, color: "#991b1b" }}>
-              Falta de ar = Sim → protocolo de urgência respiratória ativado nas
-              próximas perguntas.
-            </div>
-          </div>
-        )}
-
         <div style={{ marginTop: 8 }}>
           <Btn
             label="Próxima →"
@@ -596,35 +566,6 @@ export function Q4Screen({ navigate }: { navigate: Navigate }) {
             onClick={() => updateAnswers({ rapidWorsening: "nao" })}
           />
         </div>
-
-        {answers.rapidWorsening === "sim" && (
-          <div
-            style={{
-              border: "1.5px dashed #ea580c",
-              borderRadius: 6,
-              padding: "8px 10px",
-
-              backgroundColor: "#fff7ed",
-              marginBottom: 12,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                fontFamily: "Inter, system-ui, sans-serif",
-                color: "#ea580c",
-                fontWeight: 700,
-                marginBottom: 2,
-              }}
-            >
-              ↳ PERGUNTA CONDICIONAL
-            </div>
-            <div style={{ fontSize: 11, color: "#9a3412" }}>
-              Piora rápida = Sim → próxima pergunta verifica grupos de risco
-              (idosos, crianças, gestantes).
-            </div>
-          </div>
-        )}
 
         <Btn
           label="Próxima →"
@@ -693,35 +634,6 @@ export function Q5Screen({ navigate }: { navigate: Navigate }) {
           </div>
         ))}
 
-        <div
-          style={{
-            border: "1.5px dashed #7C93A6",
-            borderRadius: 6,
-            padding: "8px 10px",
-
-            backgroundColor: "#EFF5F9",
-            marginBottom: 12,
-            marginTop: 4,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              fontFamily: "Inter, system-ui, sans-serif",
-              color: "#5C7690",
-              fontWeight: 700,
-              marginBottom: 2,
-            }}
-          >
-            ↳ PERGUNTA CONDICIONAL
-          </div>
-          <div style={{ fontSize: 11, color: "#4E6A80" }}>
-            Se idoso ou criança selecionados → algoritmo aplica pontuação de
-            risco aumentada. Se gestante → encaminhamento preferencial para
-            maternidade.
-          </div>
-        </div>
-
         <Btn
           label="Próxima →"
           onClick={() => navigate("q6")}
@@ -779,43 +691,6 @@ export function Q6Screen({ navigate }: { navigate: Navigate }) {
             onClick={() => updateAnswers({ usingMedication: "nao" })}
           />
         </div>
-
-        {answers.usingMedication === "sim" && (
-          <div style={{ marginBottom: 16 }}>
-            <Field
-              label="Quais medicamentos? (opcional)"
-              placeholder="Ex: Losartana 50mg, Paracetamol..."
-              value={answers.medicationDetails}
-              onChange={(v) => updateAnswers({ medicationDetails: v })}
-            />
-            <div
-              style={{
-                border: "1.5px dashed #7C93A6",
-                borderRadius: 6,
-                padding: "8px 10px",
-
-                backgroundColor: "#EFF5F9",
-                marginBottom: 8,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 10,
-                  fontFamily: "Inter, system-ui, sans-serif",
-                  color: "#5C7690",
-                  fontWeight: 700,
-                  marginBottom: 2,
-                }}
-              >
-                ↳ PERGUNTA CONDICIONAL
-              </div>
-              <div style={{ fontSize: 11, color: "#4E6A80" }}>
-                Anticoagulantes / imunossupressores identificados → alerta de
-                risco elevado adicionado ao resultado.
-              </div>
-            </div>
-          </div>
-        )}
 
         <div
           style={{

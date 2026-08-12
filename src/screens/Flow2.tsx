@@ -124,6 +124,9 @@ const LEVEL_CLASSIFICATION: Record<RiskLevel, string> = {
   green: "UBS",
 }
 
+// Precisa bater exatamente com o label usado em Q5Screen (Flow1.tsx, GROUPS).
+const CHILD_GROUP_LABEL = "Criança (menor de 5 anos)"
+
 export function ResultScreen({ navigate }: { navigate: Navigate }) {
   const {
      answers,
@@ -146,13 +149,26 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
   // vermelho → só hospitais) assim que a localização estiver disponível.
   // Enquanto a geolocalização carrega/falha, usa o fallback de
   // Florianópolis — assim a recomendação nunca fica vazia.
+  //
+  // Caso especial: emergência (vermelho) + "Criança (menor de 5 anos)"
+  // marcada em Q5 → a busca é restrita ao(s) hospital(is) com atendimento
+  // pediátrico (ver campo `pediatric` em lib/healthUnits.ts), então só o
+  // Hospital Infantil Joana de Gusmão pode ser recomendado aqui — e ainda
+  // assim continua sendo escolhido pelo critério normal de "mais próximo".
   useEffect(() => {
     const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
 
     const preferredTypes = RISK_LEVEL_UNIT_TYPES[result.level]
 
-    setNearestUnit(findNearestUnit(origin, HEALTH_UNITS, preferredTypes))
-  }, [userPosition, result.level])
+    const hasChild = answers.vulnerableGroups.includes(CHILD_GROUP_LABEL)
+
+    const pool =
+      result.level === "red" && hasChild
+        ? HEALTH_UNITS.filter((u) => u.pediatric)
+        : HEALTH_UNITS
+
+    setNearestUnit(findNearestUnit(origin, pool, preferredTypes))
+  }, [userPosition, result.level, answers.vulnerableGroups])
 
   // Só é usado quando o resultado recomenda UBS (yellow/green) e o usuário
   // não consegue ir dentro do horário de atendimento — calcula a UPA mais

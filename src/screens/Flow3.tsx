@@ -11,6 +11,7 @@ import {
   ScreenWrap,
   Content,
   ListRow,
+  CheckboxItem,
 } from "../components/Wire"
 
 import { LocationMap } from "../components/LocationMap"
@@ -169,6 +170,32 @@ function DistanceTag({ km }: { km: number }) {
   )
 }
 
+// ─── Toggle "Ver unidades infantis" ────────────────────────────────────────
+// Unidades marcadas com `pediatric: true` (ver lib/healthUnits.ts — hoje só
+// o Hospital Infantil Joana de Gusmão) ficam escondidas por padrão nas
+// listas/mapa de Hospitais, já que são especializadas em atendimento
+// infantil e não servem como opção geral de emergência para um adulto. Essa
+// caixa (mostrada só quando o filtro é "Todos" ou "Hospital") deixa o
+// usuário optar por revelá-las.
+function PediatricToggle({
+  checked,
+  onToggle,
+}: {
+  checked: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div style={{ padding: "10px 16px 0" }}>
+      <div onClick={onToggle} style={{ cursor: "pointer" }}>
+        <CheckboxItem
+          label="Ver unidades infantis (ex: Hospital Infantil Joana de Gusmão)"
+          checked={checked}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ─── 6. Mapa ──────────────────────────────────────────────────────────────────
 
 export function MapScreen({ navigate }: { navigate: Navigate }) {
@@ -178,18 +205,29 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
   const [sort, setSort] = useState<"dist" | "name">("dist")
 
+  const [showPediatric, setShowPediatric] = useState(false)
+
   const { nearestUnit, result, setSelectedUnit } = useTriage()
 
   const { position: userPosition } = useGeolocation()
 
   const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
 
+  // Base de unidades visíveis nas buscas por filtro — some com unidades
+  // pediátricas a não ser que o usuário peça para vê-las (ver
+  // PediatricToggle acima). Não afeta `nearestUnit`: se a triagem já
+  // recomendou uma unidade específica (inclusive uma pediátrica, quando
+  // aplicável — ver Flow2.tsx), ela continua sendo mostrada normalmente.
+  const visibleHealthUnits = showPediatric
+    ? HEALTH_UNITS
+    : HEALTH_UNITS.filter((u) => !u.pediatric)
+
   // Depois de uma triagem, o resultado já aponta a unidade recomendada
   // (ver ResultScreen, em Flow2.tsx) — nesse caso o mapa mostra só ela, em
   // vez das 61 unidades cadastradas, pra não poluir a recomendação. Se o
   // usuário chegou aqui sem ter feito triagem (ex: menu "Unidades
   // próximas"), mantém a lista completa normalmente.
-  const mapUnits = nearestUnit ? [nearestUnit.unit] : HEALTH_UNITS
+  const mapUnits = nearestUnit ? [nearestUnit.unit] : visibleHealthUnits
 
   // "Mais próximas": por padrão (filtro "Todos"), prioriza o(s) tipo(s) de
   // unidade recomendado(s) pelo resultado da triagem (ex: laranja → só
@@ -201,10 +239,10 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
 
   const basePool =
     filter === "Todos"
-      ? HEALTH_UNITS.filter((u) => recommendedTypes.includes(u.type))
-      : HEALTH_UNITS.filter((u) => u.type === filter)
+      ? visibleHealthUnits.filter((u) => recommendedTypes.includes(u.type))
+      : visibleHealthUnits.filter((u) => u.type === filter)
 
-  const pool = basePool.length > 0 ? basePool : HEALTH_UNITS
+  const pool = basePool.length > 0 ? basePool : visibleHealthUnits
 
   const nearbyUnits = pool
     .map((u) => ({ ...u, distKm: distanceKm(origin, [u.lat, u.lng]) }))
@@ -290,6 +328,13 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
           ),
         )}
       </div>
+
+      {(filter === "Todos" || filter === "Hospital") && (
+        <PediatricToggle
+          checked={showPediatric}
+          onToggle={() => setShowPediatric((v) => !v)}
+        />
+      )}
 
       <Content noPad>
         <div style={{ padding: "12px 16px" }}>
@@ -498,16 +543,22 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 
   const [filter, setFilter] = useState<UnitType | "Todos">("Todos")
 
+  const [showPediatric, setShowPediatric] = useState(false)
+
   const { setSelectedUnit } = useTriage()
 
   const { position: userPosition } = useGeolocation()
 
   const origin = userPosition ?? FLORIANOPOLIS_FALLBACK
 
+  const visibleHealthUnits = showPediatric
+    ? HEALTH_UNITS
+    : HEALTH_UNITS.filter((u) => !u.pediatric)
+
   const filtered = (
     filter === "Todos"
-      ? HEALTH_UNITS
-      : HEALTH_UNITS.filter((u) => u.type === filter)
+      ? visibleHealthUnits
+      : visibleHealthUnits.filter((u) => u.type === filter)
   )
     .map((u) => ({ ...u, distKm: distanceKm(origin, [u.lat, u.lng]) }))
     .sort((a, b) =>
@@ -586,6 +637,13 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
           ),
         )}
       </div>
+
+      {(filter === "Todos" || filter === "Hospital") && (
+        <PediatricToggle
+          checked={showPediatric}
+          onToggle={() => setShowPediatric((v) => !v)}
+        />
+      )}
 
        {/* Sort */}
       <div

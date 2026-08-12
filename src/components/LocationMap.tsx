@@ -37,6 +37,13 @@ export interface HealthUnitMarker {
   /** Endereço completo — exibido no popup do mapa e na tela de detalhes
     * da unidade (ver UnitDetailScreen, em Flow3.tsx). */
    address?: string
+  /** Marca unidades especializadas em atendimento infantil/pediátrico
+    * (ex: Hospital Infantil Joana de Gusmão). Usado para: (1) só recomendar
+    * essa unidade no resultado da triagem quando "Criança (menor de 5
+    * anos)" está marcada em Q5, e (2) escondê-la das listas/mapa de
+    * Hospitais por padrão, revelando-a só com a caixa "Ver unidades
+    * infantis" (ver MapScreen/UnitListScreen em Flow3.tsx). */
+  pediatric?: boolean
 }
 
 const UNIT_TYPE_COLORS: Record<HealthUnitMarker["type"], string> = {

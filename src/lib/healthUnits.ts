@@ -67,7 +67,7 @@ export const HEALTH_UNITS: HealthUnitMarker[] = [
   { id: "hosp-guarnicao-florianopolis", name: "Hospital de Guarnição de Florianópolis", type: "Hospital", lat: -27.60425166899786, lng: -48.546448821036535, address: "R. Silva Jardim, 441 - Centro, Florianópolis - SC, 88020-200" },
   { id: "hosp-florianopolis", name: "Hospital Florianópolis", type: "Hospital", lat: -27.589529796610638, lng: -48.58723054557483, address: "R. Santa Rita de Cássia, 1665 - Estreito, Florianópolis - SC, 88090-352" },
   { id: "hosp-governador-celso-ramos", name: "Hospital Governador Celso Ramos", type: "Hospital", lat: -27.58849587704026, lng: -48.55041463882821, address: "Rua Irmã Benwarda, 297 - Centro, Florianópolis - SC, 88015-270" },
-  { id: "hosp-infantil-joana-de-gusmao", name: "Hospital Infantil Joana de Gusmão", type: "Hospital", lat: -27.576149012390378, lng: -48.53575631156329, address: "R. Rui Barbosa, 152 - Agronômica, Florianópolis - SC, 88025-301" },
+  { id: "hosp-infantil-joana-de-gusmao", name: "Hospital Infantil Joana de Gusmão", type: "Hospital", pediatric: true, lat: -27.576149012390378, lng: -48.53575631156329, address: "R. Rui Barbosa, 152 - Agronômica, Florianópolis - SC, 88025-301" },
   { id: "hosp-nereu-ramos", name: "Hospital Nereu Ramos", type: "Hospital", lat: -27.57716948155396, lng: -48.53414260324634, address: "R. Rui Barbosa, 800 - Agronômica, Florianópolis - SC, 88025-301" },
   { id: "hosp-multi", name: "Multi Hospital", type: "Hospital", lat: -27.664809811142174, lng: -48.54479903207875, address: "Av. Dep. Diomício Freitas, 3393 - Carianos, Florianópolis - SC, 88047-900" },
 ]
