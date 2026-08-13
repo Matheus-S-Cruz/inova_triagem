@@ -318,21 +318,24 @@ function AppShell({
           onClick={() => setNavOpen((v) => !v)}
           aria-label="Abrir navegação de telas"
           style={{
-            background: "none",
+            background: "#0F2A4A",
             border: "1px solid #155E8A",
-            borderRadius: 6,
+            borderRadius: 8,
 
             color: "#fff",
-            fontSize: 16,
-            padding: "4px 10px",
+            fontSize: 18,
+            width: 40,
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(15, 42, 74, 0.3)",
           }}
         >
           ☰
         </button>
-        <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
-          Triagem+
-        </span>
+        
       </div>
 
       {/* Menu lateral */}
@@ -573,25 +576,26 @@ function AppShell({
           aria-label="Expandir menu"
           style={{
             position: "fixed",
-            top: 16,
-            left: 8,
-            zIndex: 20,
+            top: 12,
+            left: 12,
+            zIndex: 40,
 
             background: "#0F2A4A",
             border: "1px solid #155E8A",
-            borderRadius: 6,
+            borderRadius: 8,
 
             color: "#fff",
-            fontSize: 14,
-            width: 26,
-            height: 26,
+            fontSize: 18,
+            width: 40,
+            height: 40,
             cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(15, 42, 74, 0.3)",
 
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          ›
+          ☰
         </button>
       )}
 
@@ -608,7 +612,7 @@ function AppShell({
           display: "flex",
           flexDirection: "column",
           alignItems: "stretch",
-          padding: 0,
+          padding: navCollapsed ? "60px 0 0" : 0,
           overflowY: "auto",
         }}
       >

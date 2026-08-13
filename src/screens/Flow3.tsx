@@ -227,7 +227,18 @@ export function MapScreen({ navigate }: { navigate: Navigate }) {
   // vez das 61 unidades cadastradas, pra não poluir a recomendação. Se o
   // usuário chegou aqui sem ter feito triagem (ex: menu "Unidades
   // próximas"), mantém a lista completa normalmente.
-  const mapUnits = nearestUnit ? [nearestUnit.unit] : visibleHealthUnits
+  //
+  // Esse comportamento só vale com o filtro em "Todos". Se o usuário
+  // escolher um filtro manual (UBS/UPA/Hospital), o mapa passa a respeitar
+  // esse filtro e mostra TODAS as unidades daquele tipo — mesmo que exista
+  // uma unidade recomendada — porque nesse caso a intenção é explorar o
+  // mapa por tipo, não só ver a recomendação.
+  const mapUnits =
+    filter !== "Todos"
+      ? visibleHealthUnits.filter((u) => u.type === filter)
+      : nearestUnit
+      ? [nearestUnit.unit]
+      : visibleHealthUnits
 
   // "Mais próximas": por padrão (filtro "Todos"), prioriza o(s) tipo(s) de
   // unidade recomendado(s) pelo resultado da triagem (ex: laranja → só
