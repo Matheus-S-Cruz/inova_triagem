@@ -803,6 +803,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 }
 
 // ─── 8. Detalhe da Unidade ────────────────────────────────────────────────────
+import { isOpenNow, openStatusLabel, formatHours } from "../lib/openingHours"
 
 export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
   const { nearestUnit, selectedUnit } = useTriage()
@@ -820,7 +821,32 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
   const distKm = sourceUnit
     ? distanceKm(origin, [sourceUnit.lat, sourceUnit.lng])
     : 1.2
+  
+    // Abre o Google Maps com a rota já montada: origem = localização real do
+  // usuário (se disponível) até a unidade selecionada. Sem coordenadas da
+  // unidade (caso de demonstração, sem selectedUnit/nearestUnit), cai para
+  // uma busca por endereço em vez de coordenadas.
+  const handleComoChegar = () => {
+    const destination = sourceUnit
+      ? `${sourceUnit.lat},${sourceUnit.lng}`
+      : encodeURIComponent(unit.address)
 
+    const params = new URLSearchParams({
+      api: "1",
+      destination,
+      travelmode: "driving",
+    })
+
+    if (userPosition) {
+      params.set("origin", `${userPosition[0]},${userPosition[1]}`)
+    }
+
+    window.open(
+      `https://www.google.com/maps/dir/?${params.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    )
+  }
   // Quando o ResultScreen já calculou a unidade mais próxima (ver
   // TriageContext.nearestUnit), ou o usuário clicou em uma unidade numa
   // lista/mapa (selectedUnit), mostra os dados reais dela — nome, tipo e
@@ -835,8 +861,8 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
         wait: 0,
         occupancy: "medium",
         address: selectedUnit.address || "Endereço não cadastrado ainda",
-        hours: "Consulte a unidade",
-        phone: "—",
+        hours: formatHours(selectedUnit.hours),
+        phone: selectedUnit.phone || "Telefone não informado",
       }
     : nearestUnit
     ? {
@@ -850,10 +876,16 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
         wait: 0,
         occupancy: "medium",
         address: nearestUnit.unit.address || "Endereço não cadastrado ainda",
-        hours: "Consulte a unidade",
-        phone: "—",
+        hours: formatHours(nearestUnit.unit.hours),
+        phone: nearestUnit.unit.phone || "Telefone não informado",
       }
     : UNITS[1] // demo: UPA Santo André
+
+    const openNow = sourceUnit ? isOpenNow(sourceUnit.hours) : null
+    const statusLabel = sourceUnit ? openStatusLabel(sourceUnit.hours) : "Consulte a unidade"
+
+    const statusColor =
+    openNow === true ? "#16a34a" : openNow === false ? "#dc2626" : "#7C93A6"
 
   return (
     <ScreenWrap>
@@ -915,74 +947,52 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
           </div>
         </div>
 
-        {/* Live status */}
+        {/* Status de funcionamento — calculado a partir do horário real
+           cadastrado (lib/openingHours.ts), não é lotação em tempo real. */}
         <div
           style={{
             backgroundColor: "#F5F9FB",
             border: "1.5px solid #DCE7EF",
-
             borderRadius: 8,
-            padding: "12px",
+            padding: "12px 14px",
             marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
           }}
         >
-          <div
-            style={{
-              fontSize: 10,
-              fontFamily: "Inter, system-ui, sans-serif",
-              color: "#7C93A6",
-              marginBottom: 8,
-              letterSpacing: "0.05em",
-            }}
-          >
-            STATUS ATUAL
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: "50%",
+                backgroundColor: statusColor,
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#16324F" }}>
+              {statusLabel}
+            </span>
           </div>
-          <div style={{ display: "flex", gap: 16 }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#dc2626" }}>
-                {unit.wait}
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#7C93A6",
-                  fontFamily: "Inter, system-ui, sans-serif",
-                }}
-              >
-                MIN ESPERA
-              </div>
-            </div>
-            <div style={{ width: 1, backgroundColor: "#E7EFF4" }} />
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#155E8A" }}>
-                87%
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#7C93A6",
-                  fontFamily: "Inter, system-ui, sans-serif",
-                }}
-              >
-                CAPACIDADE
-              </div>
-            </div>
-            <div style={{ width: 1, backgroundColor: "#E7EFF4" }} />
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#155E8A" }}>
-                12
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#7C93A6",
-                  fontFamily: "Inter, system-ui, sans-serif",
-                }}
-              >
-                NA FILA
-              </div>
-            </div>
-          </div>
+          {unit.phone && unit.phone !== "Telefone não informado" && unit.phone !== "—" && (
+            
+              href={`tel:${unit.phone.replace(/\D/g, "")}`}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#155E8A",
+                textDecoration: "none",
+                border: "1.5px solid #B8D2E0",
+                borderRadius: 6,
+                padding: "4px 10px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              📞 Ligar
+            </a>
+          )}
         </div>
 
         <Divider />
@@ -1019,7 +1029,11 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
 
         {/* Actions */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-          <Btn label="📍 Como Chegar" onClick={() => {}} variant="primary" />
+          <Btn
+            label="📍 Como Chegar"
+            onClick={handleComoChegar}
+            variant="primary"
+          />
           <Btn
             label="← Voltar à lista"
             onClick={() => navigate("unitlist")}

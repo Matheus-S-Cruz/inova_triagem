@@ -28,6 +28,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 })
 
+import type { UnitHoursSpec } from "../lib/openingHours"
+
 export interface HealthUnitMarker {
   id: string | number
   name: string
@@ -44,6 +46,10 @@ export interface HealthUnitMarker {
     * Hospitais por padrão, revelando-a só com a caixa "Ver unidades
     * infantis" (ver MapScreen/UnitListScreen em Flow3.tsx). */
   pediatric?: boolean
+  /** Telefone de contato da unidade, quando disponível. */
+  phone?: string
+  /** Horário de funcionamento estruturado — ver lib/openingHours.ts. */
+  hours?: UnitHoursSpec
 }
 
 const UNIT_TYPE_COLORS: Record<HealthUnitMarker["type"], string> = {
