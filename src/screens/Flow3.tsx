@@ -978,7 +978,7 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
           </div>
           {unit.phone && unit.phone !== "Telefone não informado" && unit.phone !== "—" && (
             
-              href={`tel:${unit.phone.replace(/\D/g, "")}`}
+            <a href={`tel:${unit.phone.replace(/\D/g, "")}`}
               style={{
                 fontSize: 11,
                 fontWeight: 700,

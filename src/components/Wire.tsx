@@ -552,7 +552,7 @@ export function RiskBadge({ level }: { level: RiskLevel }) {
 
 export type OccupancyLevel = "low" | "medium" | "high"
 
-const OCC_CONFIG: Record<OccupancyLevel, { color: string label: string }> = {
+const OCC_CONFIG: Record<OccupancyLevel, { color: string; label: string }> = {
   low: { color: "#16a34a", label: "Baixa" },
 
   medium: { color: "#ca8a04", label: "Média" },
@@ -930,7 +930,7 @@ export function TabBar({
   items,
   active,
 }: {
-  items: { label: string icon: string id: string }[]
+  items: { label: string; icon: string id: string }[]
   active: string
 }) {
   return (
@@ -1035,7 +1035,7 @@ function yesNoLabel(v: "sim" | "nao" | null): string {
 }
 
 export function AnswersSummary({ answers }: { answers: TriageAnswers }) {
-  const rows: { label: string value: string }[] = [
+  const rows: { label: string; value: string }[] = [
     { label: "Sintoma", value: answers.symptom || answers.symptomOther || "—" },
 
     { label: "Duração", value: answers.duration || "—" },
