@@ -206,7 +206,7 @@ export default function App() {
 
   const [navOpen, setNavOpen] = useState(false)
 
-  const [navCollapsed, setNavCollapsed] = useState(false)
+  const [navCollapsed, setNavCollapsed] = useState(true)
 
   // Mantém a tela sincronizada com a URL: reage ao voltar/avançar do
 
@@ -443,9 +443,14 @@ function AppShell({
 
                   fontSize: 18,
                   flexShrink: 0,
+                  backgroundImage: account.fotoPerfil
+                  ? `url(${account.fotoPerfil})`
+                  : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
                 }}
               >
-                👤
+                {!account.fotoPerfil && "👤"}
               </div>
               <div>
                 <div

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import type { Navigate } from "../App"
 
@@ -464,6 +464,14 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
+
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+
+  const [photoError, setPhotoError] = useState("")
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const { resetAnswers } = useTriage()
 
   const update = (key: keyof Usuario) => (value: string) =>
@@ -530,6 +538,88 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
     navigate("q1")
   }
 
+  const openPhotoModal = () => {
+    setPhotoPreview(saved?.fotoPerfil || null)
+
+    setPhotoError("")
+
+    setShowPhotoModal(true)
+  }
+
+  const closePhotoModal = () => {
+    setShowPhotoModal(false)
+
+    setPhotoPreview(null)
+
+    setPhotoError("")
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Selecione um arquivo de imagem válido.")
+
+      return
+    }
+
+    // Limite de 2MB — evita estourar o espaço prático do localStorage
+    // (compartilhado com contas, histórico etc. do app inteiro).
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError("Imagem muito grande. Escolha uma de até 2MB.")
+
+      return
+    }
+
+    setPhotoError("")
+
+    const reader = new FileReader()
+
+    reader.onload = () => setPhotoPreview(reader.result as string)
+
+    reader.readAsDataURL(file)
+  }
+
+  const handleSavePhoto = () => {
+    if (!saved || !photoPreview) {
+      setPhotoError("Escolha uma imagem antes de salvar.")
+
+      return
+    }
+
+    const updated = { ...saved, fotoPerfil: photoPreview }
+
+    const result = UserStorage.save(updated)
+
+    if (!result.ok) {
+      setPhotoError(result.error)
+
+      return
+    }
+
+    setSaved(updated)
+
+    setForm((prev) => (prev ? { ...prev, fotoPerfil: photoPreview } : prev))
+
+    closePhotoModal()
+  }
+
+  const handleRemovePhoto = () => {
+    if (!saved) return
+
+    const updated = { ...saved, fotoPerfil: "" }
+
+    UserStorage.save(updated)
+
+    setSaved(updated)
+
+    setForm((prev) => (prev ? { ...prev, fotoPerfil: "" } : prev))
+
+    closePhotoModal()
+  }
+
   // Sem conta salva (uso anônimo) — convida a criar conta.
 
   if (!saved) {
@@ -563,324 +653,436 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
     : "—"
 
   return (
-    <ScreenWrap>
-      <NavBar
-        title="Meu Perfil"
-        onBack={() => navigate("home")}
-        right={
-          <button
-            onClick={() => (editing ? handleSave() : startEdit())}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: 11,
-              color: "#4E6A80",
-              fontFamily: "Inter, system-ui, sans-serif",
-            }}
-          >
-            {editing ? "Salvar" : "Editar"}
-          </button>
-        }
-      />
-      <Content>
-        {justSaved && (
+    <>
+      <ScreenWrap>
+        <NavBar
+          title="Meu Perfil"
+          onBack={() => navigate("home")}
+          right={
+            <button
+              onClick={() => (editing ? handleSave() : startEdit())}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 11,
+                color: "#4E6A80",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              {editing ? "Salvar" : "Editar"}
+            </button>
+          }
+        />
+        <Content>
+          {justSaved && (
+            <div
+              style={{
+                backgroundColor: "#f0fdf4",
+                border: "1.5px solid #16a34a",
+
+                borderRadius: 6,
+                padding: "8px 12px",
+                marginBottom: 12,
+
+                fontSize: 12,
+                color: "#15803d",
+                textAlign: "center",
+              }}
+            >
+              ✓ Alterações salvas
+            </div>
+          )}
+
+          {/* Avatar clicável — abre o modal de troca de foto */}
           <div
             style={{
-              backgroundColor: "#f0fdf4",
-              border: "1.5px solid #16a34a",
-
-              borderRadius: 6,
-              padding: "8px 12px",
-              marginBottom: 12,
-
-              fontSize: 12,
-              color: "#15803d",
-              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 20,
             }}
           >
-            ✓ Alterações salvas
+            <div
+              onClick={openPhotoModal}
+              role="button"
+              aria-label="Alterar foto de perfil"
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                backgroundColor: "#D7E3EC",
+
+                border: "2px solid #C6D5E0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+
+                fontSize: 24,
+                color: "#8CA1B2",
+                cursor: "pointer",
+                flexShrink: 0,
+                position: "relative",
+
+                backgroundImage: saved.fotoPerfil
+                  ? `url(${saved.fotoPerfil})`
+                  : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              {!saved.fotoPerfil && "👤"}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: -2,
+                  right: -2,
+                  width: 20,
+                  height: 20,
+                  borderRadius: "50%",
+                  backgroundColor: "#155E8A",
+                  border: "2px solid #fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  color: "#fff",
+                }}
+              >
+                ✎
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0F2A4A" }}>
+                {saved.nomeCompleto || "Sem nome"}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#7C93A6",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                }}
+              >
+                Conta criada em {criadoEm}
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* Avatar placeholder */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            marginBottom: 20,
-          }}
-        >
+          <SectionTitle>Dados Pessoais</SectionTitle>
+          {editing && form ? (
+            <>
+              <Field
+                label="Nome completo"
+                value={form.nomeCompleto}
+                onChange={update("nomeCompleto")}
+              />
+              <Field
+                label="Data de nascimento"
+                placeholder="DD/MM/AAAA"
+                value={form.dataNascimento}
+                onChange={(v) => update("dataNascimento")(formatDateInput(v))}
+              />
+              <Field
+                label="Telefone"
+                type="tel"
+                placeholder="(11) 90000-0000"
+                value={form.telefone}
+                onChange={(v) => update("telefone")(formatPhoneInput(v))}
+              />
+              <Field
+                label="E-mail"
+                type="email"
+                value={form.email}
+                onChange={update("email")}
+              />
+              <Field
+                label="Cidade / Bairro"
+                value={form.cidadeBairro}
+                onChange={update("cidadeBairro")}
+              />
+            </>
+          ) : (
+            <div
+              style={{
+                backgroundColor: "#F5F9FB",
+                border: "1px solid #E3EDF3",
+                borderRadius: 8,
+                overflow: "hidden",
+                marginBottom: 14,
+              }}
+            >
+              {[
+                { label: "Nome", value: saved.nomeCompleto || "—" },
+
+                {
+                  label: "Nascimento",
+                  value: saved.dataNascimento
+                    ? `${saved.dataNascimento}${
+                        idade !== null ? ` · ${idade} anos` : ""
+                      }`
+                    : "—",
+                },
+
+                { label: "Sexo", value: saved.sexoBiologico || "—" },
+
+                { label: "Telefone", value: saved.telefone || "—" },
+
+                { label: "E-mail", value: saved.email || "—" },
+
+                { label: "Bairro", value: saved.cidadeBairro || "—" },
+              ].map(({ label, value }, i, arr) => (
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+
+                    padding: "10px 12px",
+                    borderBottom:
+                      i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#7C93A6",
+                      fontFamily: "Inter, system-ui, sans-serif",
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <span style={{ fontSize: 13, color: "#16324F" }}>
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Divider />
+          <SectionTitle>Saúde</SectionTitle>
+          {editing && form ? (
+            <>
+              <Field
+                label="Alergias conhecidas"
+                value={form.alergias}
+                onChange={update("alergias")}
+              />
+              <Field
+                label="Comorbidades / doenças crônicas"
+                value={form.comorbidades}
+                onChange={update("comorbidades")}
+              />
+              <Field
+                label="Medicamentos de uso contínuo"
+                value={form.medicamentos}
+                onChange={update("medicamentos")}
+              />
+            </>
+          ) : (
+            <div
+              style={{
+                backgroundColor: "#F5F9FB",
+                border: "1px solid #E3EDF3",
+                borderRadius: 8,
+                overflow: "hidden",
+                marginBottom: 14,
+              }}
+            >
+              {[
+                {
+                  label: "Plano de saúde",
+                  value:
+                    saved.possuiPlano === "Sim"
+                      ? saved.nomePlano || "Sim"
+                      : "Não informado",
+                },
+
+                {
+                  label: "Alergias",
+                  value: saved.alergias || "Nenhuma informada",
+                },
+
+                {
+                  label: "Comorbidades",
+                  value: saved.comorbidades || "Nenhuma informada",
+                },
+
+                {
+                  label: "Medicamentos",
+                  value: saved.medicamentos || "Nenhum informado",
+                },
+              ].map(({ label, value }, i, arr) => (
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+
+                    padding: "10px 12px",
+                    borderBottom:
+                      i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
+                    gap: 12,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#7C93A6",
+                      fontFamily: "Inter, system-ui, sans-serif",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: "#16324F",
+                      textAlign: "right",
+                    }}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Divider />
+
+          {editing ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <Field
+                label="Senha atual"
+                placeholder="Confirme sua senha para salvar"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+                error={saveError || undefined}
+              />
+
+              <Btn
+                label="Salvar alterações"
+                onClick={handleSave}
+                variant="primary"
+              />
+              <Btn
+                label="Cancelar"
+                onClick={() => setEditing(false)}
+                variant="ghost"
+              />
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <Btn
+                label="Ver histórico de triagens"
+                onClick={() => navigate("history")}
+                variant="secondary"
+              />
+              <Btn
+                label="Iniciar nova triagem"
+                onClick={startNewTriage}
+                variant="primary"
+              />
+              <Btn
+                label="Sair da conta"
+                onClick={handleLogout}
+                variant="ghost"
+              />
+              <Btn
+                label="Excluir conta"
+                onClick={() => setShowDeleteConfirm(true)}
+                variant="danger"
+              />
+            </div>
+          )}
+
+          <A11yNote
+            notes={[
+              "Modo de edição com feedback visual claro (border ativo nos campos)",
+
+              'Dados sensíveis de saúde com campo "Visibilidade" para ocultar em tela',
+            ]}
+          />
+        </Content>
+
+        {showDeleteConfirm && (
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar exclusão de conta"
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: "50%",
-              backgroundColor: "#D7E3EC",
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(15, 42, 74, 0.55)",
 
-              border: "2px solid #C6D5E0",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
 
-              fontSize: 24,
-              color: "#8CA1B2",
+              padding: 20,
+              zIndex: 50,
             }}
           >
-            👤
-          </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F2A4A" }}>
-              {saved.nomeCompleto || "Sem nome"}
-            </div>
             <div
               style={{
-                fontSize: 12,
-                color: "#7C93A6",
-                fontFamily: "Inter, system-ui, sans-serif",
+                backgroundColor: "#fff",
+                borderRadius: 12,
+                padding: "18px 18px 16px",
+
+                width: "100%",
+                maxWidth: 360,
+
+                boxShadow: "0 20px 40px rgba(15,42,74,0.3)",
               }}
             >
-              Conta criada em {criadoEm}
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color: "#0F2A4A",
+                  marginBottom: 4,
+                }}
+              >
+                Excluir conta permanentemente?
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#3A5468",
+                  marginBottom: 16,
+                  lineHeight: 1.5,
+                }}
+              >
+                Isso vai apagar sua conta e todo o seu histórico de triagens.
+                Essa ação não pode ser desfeita.
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 8 }}
+              >
+                <Btn
+                  label="Sim, excluir minha conta"
+                  onClick={handleDeleteAccount}
+                  variant="danger"
+                />
+                <Btn
+                  label="Cancelar"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  variant="ghost"
+                />
+              </div>
             </div>
           </div>
-        </div>
-
-        <SectionTitle>Dados Pessoais</SectionTitle>
-        {editing && form ? (
-          <>
-            <Field
-              label="Nome completo"
-              value={form.nomeCompleto}
-              onChange={update("nomeCompleto")}
-            />
-            <Field
-              label="Data de nascimento"
-              placeholder="DD/MM/AAAA"
-              value={form.dataNascimento}
-              onChange={(v) => update("dataNascimento")(formatDateInput(v))}
-            />
-            <Field
-              label="Telefone"
-              type="tel"
-              placeholder="(11) 90000-0000"
-              value={form.telefone}
-              onChange={(v) => update("telefone")(formatPhoneInput(v))}
-            />
-            <Field
-              label="E-mail"
-              type="email"
-              value={form.email}
-              onChange={update("email")}
-            />
-            <Field
-              label="Cidade / Bairro"
-              value={form.cidadeBairro}
-              onChange={update("cidadeBairro")}
-            />
-          </>
-        ) : (
-          <div
-            style={{
-              backgroundColor: "#F5F9FB",
-              border: "1px solid #E3EDF3",
-              borderRadius: 8,
-              overflow: "hidden",
-              marginBottom: 14,
-            }}
-          >
-            {[
-              { label: "Nome", value: saved.nomeCompleto || "—" },
-
-              {
-                label: "Nascimento",
-                value: saved.dataNascimento
-                  ? `${saved.dataNascimento}${
-                      idade !== null ? ` · ${idade} anos` : ""
-                    }`
-                  : "—",
-              },
-
-              { label: "Sexo", value: saved.sexoBiologico || "—" },
-
-              { label: "Telefone", value: saved.telefone || "—" },
-
-              { label: "E-mail", value: saved.email || "—" },
-
-              { label: "Bairro", value: saved.cidadeBairro || "—" },
-            ].map(({ label, value }, i, arr) => (
-              <div
-                key={label}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-
-                  padding: "10px 12px",
-                  borderBottom:
-                    i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#7C93A6",
-                    fontFamily: "Inter, system-ui, sans-serif",
-                  }}
-                >
-                  {label}
-                </span>
-                <span style={{ fontSize: 13, color: "#16324F" }}>{value}</span>
-              </div>
-            ))}
-          </div>
         )}
+      </ScreenWrap>
 
-        <Divider />
-        <SectionTitle>Saúde</SectionTitle>
-        {editing && form ? (
-          <>
-            <Field
-              label="Alergias conhecidas"
-              value={form.alergias}
-              onChange={update("alergias")}
-            />
-            <Field
-              label="Comorbidades / doenças crônicas"
-              value={form.comorbidades}
-              onChange={update("comorbidades")}
-            />
-            <Field
-              label="Medicamentos de uso contínuo"
-              value={form.medicamentos}
-              onChange={update("medicamentos")}
-            />
-          </>
-        ) : (
-          <div
-            style={{
-              backgroundColor: "#F5F9FB",
-              border: "1px solid #E3EDF3",
-              borderRadius: 8,
-              overflow: "hidden",
-              marginBottom: 14,
-            }}
-          >
-            {[
-              {
-                label: "Plano de saúde",
-                value:
-                  saved.possuiPlano === "Sim"
-                    ? saved.nomePlano || "Sim"
-                    : "Não informado",
-              },
-
-              {
-                label: "Alergias",
-                value: saved.alergias || "Nenhuma informada",
-              },
-
-              {
-                label: "Comorbidades",
-                value: saved.comorbidades || "Nenhuma informada",
-              },
-
-              {
-                label: "Medicamentos",
-                value: saved.medicamentos || "Nenhum informado",
-              },
-            ].map(({ label, value }, i, arr) => (
-              <div
-                key={label}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-
-                  padding: "10px 12px",
-                  borderBottom:
-                    i < arr.length - 1 ? "1px solid #EAF2F6" : "none",
-                  gap: 12,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#7C93A6",
-                    fontFamily: "Inter, system-ui, sans-serif",
-                    flexShrink: 0,
-                  }}
-                >
-                  {label}
-                </span>
-                <span
-                  style={{ fontSize: 12, color: "#16324F", textAlign: "right" }}
-                >
-                  {value}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Divider />
-
-        {editing ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Field
-              label="Senha atual"
-              placeholder="Confirme sua senha para salvar"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-              error={saveError || undefined}
-            />
-
-            <Btn
-              label="Salvar alterações"
-              onClick={handleSave}
-              variant="primary"
-            />
-            <Btn
-              label="Cancelar"
-              onClick={() => setEditing(false)}
-              variant="ghost"
-            />
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Btn
-              label="Ver histórico de triagens"
-              onClick={() => navigate("history")}
-              variant="secondary"
-            />
-            <Btn
-              label="Iniciar nova triagem"
-              onClick={startNewTriage}
-              variant="primary"
-            />
-            <Btn label="Sair da conta" onClick={handleLogout} variant="ghost" />
-            <Btn
-              label="Excluir conta"
-              onClick={() => setShowDeleteConfirm(true)}
-              variant="danger"
-            />
-          </div>
-        )}
-
-        <A11yNote
-          notes={[
-            "Modo de edição com feedback visual claro (border ativo nos campos)",
-
-            'Dados sensíveis de saúde com campo "Visibilidade" para ocultar em tela',
-          ]}
-        />
-      </Content>
-
-      {showDeleteConfirm && (
+      {showPhotoModal && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Confirmar exclusão de conta"
+          aria-label="Alterar foto de perfil"
           style={{
             position: "fixed",
             inset: 0,
@@ -914,35 +1116,94 @@ export function ProfileScreen({ navigate }: { navigate: Navigate }) {
                 marginBottom: 4,
               }}
             >
-              Excluir conta permanentemente?
+              Alterar foto de perfil
             </div>
+            <div style={{ fontSize: 12, color: "#7C93A6", marginBottom: 16 }}>
+              Escolha uma imagem do seu dispositivo
+            </div>
+
             <div
               style={{
-                fontSize: 12,
-                color: "#3A5468",
+                display: "flex",
+                justifyContent: "center",
                 marginBottom: 16,
-                lineHeight: 1.5,
               }}
             >
-              Isso vai apagar sua conta e todo o seu histórico de triagens. Essa
-              ação não pode ser desfeita.
+              <div
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: "50%",
+                  backgroundColor: "#D7E3EC",
+                  border: "2px solid #C6D5E0",
+
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  fontSize: 36,
+                  color: "#8CA1B2",
+
+                  backgroundImage: photoPreview
+                    ? `url(${photoPreview})`
+                    : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                {!photoPreview && "👤"}
+              </div>
             </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+
+            {photoError && (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#DC2626",
+                  marginBottom: 12,
+                  textAlign: "center",
+                }}
+              >
+                ⚠ {photoError}
+              </div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <Btn
-                label="Sim, excluir minha conta"
-                onClick={handleDeleteAccount}
-                variant="danger"
+                label="Escolher imagem"
+                onClick={() => fileInputRef.current?.click()}
+                variant="secondary"
               />
               <Btn
+                label="Salvar foto"
+                onClick={handleSavePhoto}
+                variant="primary"
+              />
+              {saved.fotoPerfil && (
+                <Btn
+                  label="Remover foto atual"
+                  onClick={handleRemovePhoto}
+                  variant="ghost"
+                />
+              )}
+              <Btn
                 label="Cancelar"
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={closePhotoModal}
                 variant="ghost"
               />
             </div>
           </div>
         </div>
       )}
-    </ScreenWrap>
+    </>
   )
 }
 

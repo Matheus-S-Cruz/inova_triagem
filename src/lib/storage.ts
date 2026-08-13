@@ -44,6 +44,8 @@ export interface Usuario {
   receberNotificacoes: boolean
 
   contaCriadaEm: string // ISO
+
+  fotoPerfil: string // data URL (base64) da foto escolhida, ou "" se não definida
 }
 
 export function emptyUsuario(): Usuario {
@@ -79,6 +81,8 @@ export function emptyUsuario(): Usuario {
     receberNotificacoes: false,
 
     contaCriadaEm: "",
+
+    fotoPerfil: "",
   }
 }
 
