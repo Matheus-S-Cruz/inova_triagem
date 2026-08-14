@@ -977,22 +977,21 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
             </span>
           </div>
           {unit.phone && unit.phone !== "Telefone não informado" && unit.phone !== "—" && (
-            
-            <a href={`tel:${unit.phone.replace(/\D/g, "")}`}
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#155E8A",
-                textDecoration: "none",
-                border: "1.5px solid #B8D2E0",
-                borderRadius: 6,
-                padding: "4px 10px",
-                whiteSpace: "nowrap",
-              }}
-            >
-              📞 Ligar
-            </a>
-          )}
+  <a href={`tel:${unit.phone.replace(/\D/g, "")}`}
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#155E8A",
+      textDecoration: "none",
+      border: "1.5px solid #B8D2E0",
+      borderRadius: 6,
+      padding: "4px 10px",
+      whiteSpace: "nowrap",
+    }}
+  >
+    📞 {unit.phone}
+  </a>
+)}
         </div>
 
         <Divider />
