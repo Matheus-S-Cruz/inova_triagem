@@ -930,7 +930,7 @@ export function TabBar({
   items,
   active,
 }: {
-  items: { label: string; icon: string id: string }[]
+  items: { label: string; icon: string; id: string }[]
   active: string
 }) {
   return (

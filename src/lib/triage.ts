@@ -26,9 +26,31 @@
 
 // Este NÃO é um sistema de diagnóstico — é uma árvore de decisão de
 
-// orientação, deliberadamente conservadora (erra para o lado de recomendar
+// orientação própria, deliberadamente conservadora (erra para o lado de
 
-// um nível de cuidado mais alto quando há dúvida).
+// recomendar um nível de cuidado mais alto quando há dúvida).
+
+//
+
+// Inspirada em princípios gerais de sistemas de classificação de risco
+
+// (ex: Protocolo de Manchester), mas NÃO é uma implementação do protocolo
+
+// oficial — este não usa os 55 fluxogramas por queixa nem os discriminadores
+
+// específicos do Manchester, e é aplicada sem supervisão de profissional.
+
+//
+
+// Diferença deliberada: usamos 4 níveis (vermelho/laranja/amarelo/verde),
+
+// removendo por segurança a categoria "azul / não urgente / cuidados em
+
+// casa" presente no protocolo original. Todo usuário recebe pelo menos uma
+
+// recomendação de UBS — o app nunca orienta alguém a não buscar
+
+// atendimento algum.
 
 export type YesNo = "sim" | "nao" | null
 
