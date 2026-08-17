@@ -8,6 +8,8 @@ import {
   type SetStateAction,
 } from "react"
 
+import type { ScreenId } from "../App"
+
 import {
   classifyRisk,
   emptyTriageAnswers,
@@ -39,6 +41,9 @@ import type { HealthUnitMarker } from "../components/LocationMap"
 // que `resetAnswers()` roda (ou seja, ao iniciar uma nova triagem).
 
 interface TriageContextValue {
+
+  
+  
   answers: TriageAnswers
 
   setAnswers: Dispatch<SetStateAction<TriageAnswers>>
@@ -68,6 +73,15 @@ interface TriageContextValue {
   selectedUnit: HealthUnitMarker | null
 
   setSelectedUnit: Dispatch<SetStateAction<HealthUnitMarker | null>>
+
+  /** Tela para onde o botão "voltar" do UnitDetailScreen deve levar, quando
+   * a unidade foi aberta a partir de um contexto específico (ex: direto do
+   * ResultScreen) em vez do fluxo padrão mapa → lista → detalhe. `null`
+   * usa o destino padrão ("unitlist"). Consumido e limpo pelo próprio
+   * UnitDetailScreen assim que o back é usado. */
+  returnScreen: ScreenId | null
+
+  setReturnScreen: Dispatch<SetStateAction<ScreenId | null>>
 }
 
 const TriageContext = createContext<TriageContextValue | null>(null)
@@ -110,6 +124,8 @@ export function TriageProvider({ children }: { children: ReactNode }) {
   
   const [selectedUnit, setSelectedUnitState] =
     useState<HealthUnitMarker | null>(() => loadSelectedUnit())
+
+  const [returnScreen, setReturnScreen] = useState<ScreenId | null>(null)
 
   // Envolve o setState padrão para também gravar no sessionStorage a cada
   // mudança — assim um F5 na tela de detalhes (UnitDetailScreen) continua
@@ -193,6 +209,9 @@ export function TriageProvider({ children }: { children: ReactNode }) {
 
         selectedUnit,
         setSelectedUnit,
+
+        returnScreen,
+        setReturnScreen,
       }}
     >
       {children}

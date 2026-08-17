@@ -70,8 +70,56 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
             padding: "32px 24px 24px",
           }}
         >
-          <div style={{ marginBottom: 4 }}>
+           <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              marginBottom: 4,
+            }}
+          >
             <LogoLockup size={40} />
+
+            {!hasAccount && (
+              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                <button
+                  onClick={() => navigate("login")}
+                  style={{
+                    background: "none",
+                    border: "1.5px solid #B8D2E0",
+                    borderRadius: 20,
+                    cursor: "pointer",
+
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#155E8A",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    padding: "6px 14px",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  Entrar
+                </button>
+                <button
+                  onClick={() => navigate("register")}
+                  style={{                   
+                    background: "linear-gradient(135deg, #155E8A 0%, #0F9B8E 100%)",
+                    border: "1.5px solid transparent",
+                    borderRadius: 20,
+                    cursor: "pointer",
+
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#fff",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    padding: "6px 14px",
+                    boxShadow: "0 2px 6px rgba(21,94,138,0.25)",
+                  }}
+                >
+                  Criar Conta
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -119,25 +167,13 @@ export function HomeScreen({ navigate }: { navigate: Navigate }) {
               onClick={startTriage}
               variant="primary"
             />
-            {hasAccount ? (
+            {hasAccount && (
               <Btn
                 label="Meu Perfil"
                 onClick={() => navigate("profile")}
                 variant="secondary"
               />
-            ) : (
-              <>
-                <Btn
-                  label="Entrar"
-                  onClick={() => navigate("login")}
-                  variant="secondary"
-                />
-                <Btn
-                  label="Criar Conta"
-                  onClick={() => navigate("register")}
-                  variant="ghost"
-                />
-              </>
+            
             )}
           </div>
 

@@ -137,6 +137,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
      nearestUnit,
      setNearestUnit,
      setSelectedUnit,
+     setReturnScreen,
    } = useTriage()
 
   const rec = RECOMMENDATIONS[result.level]
@@ -181,6 +182,7 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
 
     if (nearestUPA) {
       setSelectedUnit(nearestUPA.unit)
+      setReturnScreen("result")
 
       navigate("unitdetail")
     }
@@ -280,7 +282,10 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
               />
               <Btn
                 label="Ver detalhes"
-                onClick={() => navigate("unitdetail")}
+                onClick={() => {
+                  setReturnScreen("result")
+                  navigate("unitdetail")
+                }}
                 variant="secondary"
                 small
                 full={false}

@@ -806,7 +806,7 @@ export function UnitListScreen({ navigate }: { navigate: Navigate }) {
 import { isOpenNow, openStatusLabel, formatHours } from "../lib/openingHours"
 
 export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
-  const { nearestUnit, selectedUnit } = useTriage()
+  const { nearestUnit, selectedUnit, returnScreen, setReturnScreen } = useTriage()
 
   const { position: userPosition } = useGeolocation()
 
@@ -889,7 +889,14 @@ export function UnitDetailScreen({ navigate }: { navigate: Navigate }) {
 
   return (
     <ScreenWrap>
-      <NavBar title="Detalhes" onBack={() => navigate("unitlist")} />
+      <NavBar
+        title="Detalhes"
+        onBack={() => {
+          const target = returnScreen ?? "unitlist"
+          setReturnScreen(null)
+          navigate(target)
+        }}
+      />
       <Content>
         {/* Header */}
         <div style={{ marginBottom: 12 }}>
