@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import type { Navigate } from "../App"
 
@@ -29,6 +29,13 @@ import {
 } from "../lib/geolocation"
 
 import { HEALTH_UNITS, RISK_LEVEL_UNIT_TYPES } from "../lib/healthUnits"
+
+import {
+  buildTriageSummaryText,
+  buildTriagePrintableHtml,
+  shareOrCopyTriageSummary,
+  openPrintableTriageSummary,
+} from "../lib/shareTriage"
 
 // ─── 4. Resultado da Classificação ────────────────────────────────────────────
 
@@ -143,6 +150,25 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
   const rec = RECOMMENDATIONS[result.level]
 
   const alreadySavedRef = useRef(false)
+
+  const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied">("idle")
+
+  const handleShare = async () => {
+    const usuario = UserStorage.get()
+    const text = buildTriageSummaryText({ answers, result, usuario })
+    const outcome = await shareOrCopyTriageSummary(text)
+
+    if (outcome === "failed") return
+
+    setShareStatus(outcome)
+    setTimeout(() => setShareStatus("idle"), 2500)
+  }
+
+  const handleDownloadPdf = () => {
+    const usuario = UserStorage.get()
+    const html = buildTriagePrintableHtml({ answers, result, usuario })
+    openPrintableTriageSummary(html)
+  }
 
   const { position: userPosition, status: geoStatus } = useGeolocation()
 
@@ -379,6 +405,34 @@ export function ResultScreen({ navigate }: { navigate: Navigate }) {
         <SectionTitle>Resumo da Triagem</SectionTitle>
         <div style={{ marginBottom: 16 }}>
           <AnswersSummary answers={answers} />
+        </div>
+
+        <SectionTitle>Compartilhar com a unidade</SectionTitle>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <Btn
+              label="📤 Compartilhar resumo"
+              onClick={handleShare}
+              variant="secondary"
+              small
+              full={false}
+            />
+            <Btn
+              label="🖨 Baixar / Imprimir PDF"
+              onClick={handleDownloadPdf}
+              variant="secondary"
+              small
+              full={false}
+            />
+          </div>
+          {shareStatus !== "idle" && (
+            <div style={{ fontSize: 11, color: "#15803d", textAlign: "center" }}>
+              ✓{" "}
+              {shareStatus === "shared"
+                ? "Compartilhado"
+                : "Copiado para a área de transferência"}
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
